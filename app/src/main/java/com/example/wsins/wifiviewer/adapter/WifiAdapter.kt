@@ -13,8 +13,6 @@ import com.example.wsins.wifiviewer.info.WifiInfo
 class WifiAdapter(val mContext: Context) : BaseAdapter() {
 
     private var mWifiInfos: List<WifiInfo>? = null
-    private var tv_wifi_name: TextView? = null
-    private var tv_wifi_pwd: TextView? = null
 
     fun setData(wifiInfos: List<WifiInfo>) {
         mWifiInfos = wifiInfos
@@ -27,12 +25,27 @@ class WifiAdapter(val mContext: Context) : BaseAdapter() {
     override fun getItemId(position: Int): Long = position.toLong()
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        var convertView = LayoutInflater.from(mContext).inflate(R.layout.item_wifi, null)
-        tv_wifi_name = convertView.findViewById(R.id.tv_wifi_name)
-        tv_wifi_pwd = convertView.findViewById(R.id.tv_wifi_pwd)
-        tv_wifi_name!!.text = mWifiInfos!![position].ssid
-        tv_wifi_pwd!!.text = mWifiInfos!![position].password
-        return convertView
+        var mWifiViewHold: WifiViewHold
+        var mItemView: View
+        if (convertView == null) {
+            mWifiViewHold = WifiViewHold()
+            mItemView = LayoutInflater.from(mContext).inflate(R.layout.item_wifi, null)
+            mWifiViewHold.tv_wifi_name = mItemView.findViewById(R.id.tv_wifi_name)
+            mWifiViewHold.tv_wifi_pwd = mItemView.findViewById(R.id.tv_wifi_pwd)
+            mItemView.tag = mWifiViewHold
+
+        } else {
+            mItemView = convertView
+            mWifiViewHold = mItemView.tag as WifiViewHold
+        }
+        mWifiViewHold.tv_wifi_name.text = mWifiInfos!![position].ssid
+        mWifiViewHold.tv_wifi_pwd.text = mWifiInfos!![position].password
+        return mItemView
+    }
+
+    class WifiViewHold {
+        lateinit var tv_wifi_name: TextView
+        lateinit var tv_wifi_pwd: TextView
     }
 
 }

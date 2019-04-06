@@ -12,27 +12,27 @@ import java.util.regex.Pattern
 
 class WifiManage {
 
-    private var wifiInfos: MutableList<WifiInfo>? = null
-    private var wifiInfo: WifiInfo? = null
+    lateinit var wifiInfos: MutableList<WifiInfo>
+    lateinit var wifiInfo: WifiInfo
 
-    private var process: Process? = null
+    lateinit var process: Process
 
     private var dataOutputStream: DataOutputStream? = null
     private var dataInputStream: DataInputStream? = null
-    private var inputStreamReader: InputStreamReader? = null
-    private var bufferedReader: BufferedReader? = null
+    lateinit var inputStreamReader: InputStreamReader
+    lateinit var bufferedReader: BufferedReader
+    lateinit var wifiConf: StringBuffer
 
-    private var network: Pattern? = null
-    private var ssid: Pattern? = null
-    private var psk: Pattern? = null
+    lateinit var network: Pattern
+    lateinit var ssid: Pattern
+    lateinit var psk: Pattern
 
-    private var networkMatcher: Matcher? = null
-    private var ssidMatcher: Matcher? = null
-    private var pskMatcher: Matcher? = null
+    lateinit var networkMatcher: Matcher
+    lateinit var ssidMatcher: Matcher
+    lateinit var pskMatcher: Matcher
 
+    lateinit var networkBlock: String
     private var line: String? = null
-    private var networkBlock: String? = null
-    private var wifiConf: StringBuffer? = null
 
     @Throws(Exception::class)
     fun Read(): List<WifiInfo>? {
@@ -41,58 +41,52 @@ class WifiManage {
         wifiConf = StringBuffer()
         try {
             process = Runtime.getRuntime().exec("su")
-            dataOutputStream = DataOutputStream(process!!.outputStream).apply {
+            dataOutputStream = DataOutputStream(process.outputStream).apply {
                 writeBytes("cat /data/misc/wifi/*.conf\n")
                 writeBytes("exit\n")
                 flush()
             }
-            dataInputStream = DataInputStream(process!!.inputStream)
+            dataInputStream = DataInputStream(process.inputStream)
             inputStreamReader = InputStreamReader(dataInputStream, "UTF-8")
             bufferedReader = BufferedReader(inputStreamReader)
-            while ({ line = bufferedReader!!.readLine();line }() != null) {
-                wifiConf!!.append(line)
+            while ({ line = bufferedReader.readLine();line }() != null) {
+                wifiConf.append(line)
             }
-            bufferedReader!!.close()
-            inputStreamReader!!.close()
-            process!!.waitFor()
+            bufferedReader.close()
+            inputStreamReader.close()
+            process.waitFor()
         } catch (e: Exception) {
             throw e
         } finally {
             try {
-                if (dataOutputStream != null) {
-                    dataOutputStream!!.close()
-                }
-                if (dataInputStream != null) {
-                    dataInputStream!!.close()
-                }
-                process!!.destroy()
+                dataOutputStream?.close()
+                dataInputStream?.close()
+                process.destroy()
             } catch (e: Exception) {
                 throw e
             }
-
         }
-
-        return parseData(wifiConf!!)
+        return parseData(wifiConf)
     }
 
     private fun parseData(wifiConf: StringBuffer): List<WifiInfo>? {
         network = Pattern.compile("network=\\{([^\\}]+)\\}", Pattern.DOTALL)
-        networkMatcher = network!!.matcher(wifiConf.toString())
-        while (networkMatcher!!.find()) {
-            networkBlock = networkMatcher!!.group()
+        networkMatcher = network.matcher(wifiConf.toString())
+        while (networkMatcher.find()) {
+            networkBlock = networkMatcher.group()
             ssid = Pattern.compile("ssid=\"([^\"]+)\"")
-            ssidMatcher = ssid!!.matcher(networkBlock)
-            if (ssidMatcher!!.find()) {
+            ssidMatcher = ssid.matcher(networkBlock)
+            if (ssidMatcher.find()) {
                 wifiInfo = WifiInfo()
-                wifiInfo!!.ssid = ssidMatcher!!.group(1)
+                wifiInfo.ssid = ssidMatcher.group(1)
                 psk = Pattern.compile("psk=\"([^\"]+)\"")
-                pskMatcher = psk!!.matcher(networkBlock)
-                if (pskMatcher!!.find()) {
-                    wifiInfo!!.password = pskMatcher!!.group(1)
+                pskMatcher = psk.matcher(networkBlock)
+                if (pskMatcher.find()) {
+                    wifiInfo.password = pskMatcher.group(1)
                 } else {
-                    wifiInfo!!.password = "无密码"
+                    wifiInfo.password = "无密码"
                 }
-                wifiInfos!!.add(wifiInfo!!)
+                wifiInfos.add(wifiInfo)
             }
         }
         return wifiInfos

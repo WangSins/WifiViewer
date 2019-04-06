@@ -1,5 +1,7 @@
 package com.example.wsins.wifiviewer.activity
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.ActionBar
 import android.support.v7.app.AppCompatActivity
@@ -12,6 +14,14 @@ class AboutActivity : AppCompatActivity() {
     private var actionBar: ActionBar? = null
     private var versionName: String? = null
 
+    companion object {
+        val intent = Intent()
+        fun move(context: Context) {
+            intent.setClass(context, AboutActivity::class.java)
+            context.startActivity(intent)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_about)
@@ -21,13 +31,10 @@ class AboutActivity : AppCompatActivity() {
     }
 
     private fun initActionBar() {
-        actionBar = supportActionBar
-        if (actionBar != null) {
-            actionBar!!.apply {
-                title = "关于"
-                setHomeButtonEnabled(true)
-                setDisplayHomeAsUpEnabled(true)
-            }
+        actionBar = supportActionBar?.apply {
+            title = "关于"
+            setHomeButtonEnabled(true)
+            setDisplayHomeAsUpEnabled(true)
         }
     }
 
@@ -36,7 +43,7 @@ class AboutActivity : AppCompatActivity() {
     }
 
     private fun initView() {
-        tv_brief.text = "这是作者闲暇时间为自己备用机开发的一个App。\n目前支持的功能有：\n1.对获取本地保存的WiFi信息。\n2.长按对密码进行复制。"
+        tv_brief.text = "\u3000\u3000这是作者闲暇时间为自己备用机开发的一款App。\n目前支持的功能有：\n1.获取本地保存的WiFi信息。\n2.长按对密码进行复制。"
         tv_version.text = "当前版本：v${versionName}"
     }
 

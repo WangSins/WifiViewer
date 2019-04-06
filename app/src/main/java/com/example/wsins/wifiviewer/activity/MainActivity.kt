@@ -11,22 +11,21 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
-import android.widget.ListView
 import android.widget.Toast
 
 import com.example.wsins.wifiviewer.R
 import com.example.wsins.wifiviewer.utils.WifiManage
 import com.example.wsins.wifiviewer.adapter.WifiAdapter
 import com.example.wsins.wifiviewer.info.WifiInfo
+import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity(), AdapterView.OnItemLongClickListener {
 
-    private var wifiAdapter: WifiAdapter? = null
-    private var lv_wifi_list: ListView? = null
-    private var mWifiInfos: List<WifiInfo>? = null
+    lateinit var wifiAdapter: WifiAdapter
+    lateinit var mWifiInfos: List<WifiInfo>
 
-    private var mclipData: ClipData? = null
-    private var mClipboardManager: ClipboardManager? = null
+    lateinit var mclipData: ClipData
+    lateinit var mClipboardManager: ClipboardManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,11 +47,12 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemLongClickListener {
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item!!.itemId) {
+        when (item?.itemId) {
             R.id.item_flash -> {
                 initData()
-                wifiAdapter!!.setData(mWifiInfos!!)
-                wifiAdapter!!.notifyDataSetChanged()
+                wifiAdapter.setData(mWifiInfos)
+                wifiAdapter.notifyDataSetChanged()
+                Toast.makeText(this, "刷新完成。", Toast.LENGTH_SHORT).show()
             }
             R.id.item_setting -> {
                 val intent = Intent()
@@ -60,9 +60,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemLongClickListener {
                 startActivity(intent)
             }
             R.id.item_about -> {
-                val intent = Intent()
-                intent.setClass(this, AboutActivity::class.java)
-                startActivity(intent)
+                AboutActivity.move(this)
             }
         }
         return super.onOptionsItemSelected(item)
@@ -71,25 +69,24 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemLongClickListener {
     @Throws(Exception::class)
     fun initData() {
         WifiManage().also {
-            mWifiInfos = it.Read()
+            mWifiInfos = it.Read()!!
         }
     }
 
     private fun initView() {
-        lv_wifi_list = findViewById(com.example.wsins.wifiviewer.R.id.lv_wifi_list)
         wifiAdapter = WifiAdapter(this@MainActivity)
-        wifiAdapter!!.setData(mWifiInfos!!)
-        lv_wifi_list!!.adapter = wifiAdapter
+        wifiAdapter.setData(mWifiInfos)
+        lv_wifi_list.adapter = wifiAdapter
     }
 
     private fun initListener() {
-        lv_wifi_list!!.onItemLongClickListener = this
+        lv_wifi_list.onItemLongClickListener = this
     }
 
     override fun onItemLongClick(parent: AdapterView<*>, view: View, position: Int, id: Long): Boolean {
         mClipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        mclipData = ClipData.newPlainText("wifipwd", mWifiInfos!![position].password).also {
-            mClipboardManager!!.primaryClip = it
+        mclipData = ClipData.newPlainText("wifipwd", mWifiInfos[position].password).also {
+            mClipboardManager.primaryClip = it
         }
         Toast.makeText(this@MainActivity, "密码复制成功。", Toast.LENGTH_LONG).show()
         return false
