@@ -14,6 +14,7 @@ import kotlinx.android.synthetic.main.activity_about.*
 class AboutActivity : AppCompatActivity() {
     private var actionBar: ActionBar? = null
     private var versionName: String? = null
+    private var versionCode: Int? = null
 
     companion object {
         private val intent = Intent()
@@ -41,16 +42,16 @@ class AboutActivity : AppCompatActivity() {
 
     private fun initData() {
         versionName = VersionCodeUtils().getVerName(this)
+        versionCode = VersionCodeUtils().getVersionCode(this)
     }
 
     @SuppressLint("SetTextI18n")
     private fun initView() {
-        tv_brief.text = "\u3000\u3000这是作者闲暇时间为自己备用机开发的一款App。\n" +
-                "目前支持的功能有：\n" +
+        tv_brief.text = "目前支持的功能有：\n" +
                 "1.获取本地保存的WiFi信息。\n" +
                 "2.点击对密码进行复制。\n" +
                 "3.长按对SSID和密码进行复制。"
-        tv_version.text = "当前版本：v${versionName}"
+        tv_version.text = "当前版本：${versionName} (${versionCode})"
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
