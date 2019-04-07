@@ -13,6 +13,7 @@ import com.example.wsins.wifiviewer.R
 import com.example.wsins.wifiviewer.adapter.WifiAdapter
 import com.example.wsins.wifiviewer.info.WifiInfo
 import com.example.wsins.wifiviewer.utils.ClipBoardUtils
+import com.example.wsins.wifiviewer.utils.ToastUtils
 import com.example.wsins.wifiviewer.utils.WifiManage
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -46,7 +47,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemLongClickListener, A
                 initData()
                 wifiAdapter.setData(mWifiInfos)
                 wifiAdapter.notifyDataSetChanged()
-                Toast.makeText(this, "刷新完成。", Toast.LENGTH_SHORT).show()
+                ToastUtils.showToast(this, "刷新完成。")
             }
             R.id.item_setting -> {
                 val intent = Intent()
@@ -80,12 +81,12 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemLongClickListener, A
 
     override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
         ClipBoardUtils().copyClipBoard(this, "wifipwd", mWifiInfos[position].password)
-        Toast.makeText(this@MainActivity, "密码复制成功。", Toast.LENGTH_SHORT).show()
+        ToastUtils.showToast(this, "已复制密码 ${mWifiInfos[position].password} 到剪贴板。")
     }
 
     override fun onItemLongClick(parent: AdapterView<*>, view: View, position: Int, id: Long): Boolean {
         ClipBoardUtils().copyClipBoard(this, "wifissidpwd", "SSID：" + mWifiInfos[position].ssid + "\n密码：" + mWifiInfos[position].password)
-        Toast.makeText(this@MainActivity, "SSID和密码复制成功。", Toast.LENGTH_SHORT).show()
+        ToastUtils.showToast(this, "已复制 ${mWifiInfos[position].ssid} 的SSID和密码到剪贴板。")
         return true
     }
 
@@ -93,7 +94,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemLongClickListener, A
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if ((System.currentTimeMillis() - mExitTime) > 2000) {
-                Toast.makeText(this, "再按一次退出程序。", Toast.LENGTH_SHORT).show()
+                ToastUtils.showToast(this, "再按一次退出程序。")
                 mExitTime = System.currentTimeMillis()
             } else {
                 finish()
