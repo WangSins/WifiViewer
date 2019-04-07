@@ -1,14 +1,13 @@
 package com.example.wsins.wifiviewer.utils
 
 import com.example.wsins.wifiviewer.info.WifiInfo
-
-import java.io.BufferedReader
-import java.io.DataInputStream
-import java.io.DataOutputStream
-import java.io.InputStreamReader
-import java.util.ArrayList
-import java.util.regex.Matcher
+import org.w3c.dom.Element
+import org.xml.sax.SAXException
+import java.io.*
+import java.util.*
 import java.util.regex.Pattern
+import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.parsers.ParserConfigurationException
 
 class WifiManage {
 
@@ -19,38 +18,33 @@ class WifiManage {
 
     private var dataOutputStream: DataOutputStream? = null
     private var dataInputStream: DataInputStream? = null
-    lateinit var inputStreamReader: InputStreamReader
-    lateinit var bufferedReader: BufferedReader
-    lateinit var wifiConf: StringBuffer
+    lateinit var byteArrayInputStream: ByteArrayInputStream
 
-    lateinit var network: Pattern
-    lateinit var ssid: Pattern
-    lateinit var psk: Pattern
-
-    lateinit var networkMatcher: Matcher
-    lateinit var ssidMatcher: Matcher
-    lateinit var pskMatcher: Matcher
-
-    lateinit var networkBlock: String
     private var line: String? = null
 
-    @Throws(Exception::class)
-    fun Read(): List<WifiInfo>? {
-
-        wifiInfos = ArrayList()
-        wifiConf = StringBuffer()
+    fun readData(): List<WifiInfo>? {
+        val isO: Boolean
+        val fileName: String
+        if (android.os.Build.VERSION.SDK_INT >= 26) {
+            fileName = "*.xml"
+            isO = true
+        } else {
+            fileName = "*.conf"
+            isO = false
+        }
+        val wifiData = StringBuffer()
         try {
-            process = Runtime.getRuntime().exec("su")
+            process = getSUProcess()
             dataOutputStream = DataOutputStream(process.outputStream).apply {
-                writeBytes("cat /data/misc/wifi/*.conf\n")
+                writeBytes("cat /data/misc/wifi/$fileName\n")
                 writeBytes("exit\n")
                 flush()
             }
             dataInputStream = DataInputStream(process.inputStream)
-            inputStreamReader = InputStreamReader(dataInputStream, "UTF-8")
-            bufferedReader = BufferedReader(inputStreamReader)
+            val inputStreamReader = InputStreamReader(dataInputStream, "UTF-8")
+            val bufferedReader = BufferedReader(inputStreamReader)
             while ({ line = bufferedReader.readLine();line }() != null) {
-                wifiConf.append(line)
+                wifiData.append(line)
             }
             bufferedReader.close()
             inputStreamReader.close()
@@ -66,30 +60,88 @@ class WifiManage {
                 throw e
             }
         }
-        return parseData(wifiConf)
+        return if (isO) {
+            parseXml(wifiData)
+        } else {
+            parseConf(wifiData)
+        }
     }
 
-    private fun parseData(wifiConf: StringBuffer): List<WifiInfo>? {
-        network = Pattern.compile("network=\\{([^\\}]+)\\}", Pattern.DOTALL)
-        networkMatcher = network.matcher(wifiConf.toString())
+    private fun parseConf(wifiData: StringBuffer): List<WifiInfo>? {
+        wifiInfos = ArrayList()
+        val network = Pattern.compile("network=\\{([^\\}]+)\\}", Pattern.DOTALL)
+        val networkMatcher = network.matcher(wifiData.toString())
         while (networkMatcher.find()) {
-            networkBlock = networkMatcher.group()
-            ssid = Pattern.compile("ssid=\"([^\"]+)\"")
-            ssidMatcher = ssid.matcher(networkBlock)
+            val networkBlock = networkMatcher.group()
+            val ssid = Pattern.compile("ssid=\"([^\"]+)\"")
+            val ssidMatcher = ssid.matcher(networkBlock)
             if (ssidMatcher.find()) {
                 wifiInfo = WifiInfo()
                 wifiInfo.ssid = ssidMatcher.group(1)
-                psk = Pattern.compile("psk=\"([^\"]+)\"")
-                pskMatcher = psk.matcher(networkBlock)
+                val psk = Pattern.compile("psk=\"([^\"]+)\"")
+                val pskMatcher = psk.matcher(networkBlock)
                 if (pskMatcher.find()) {
                     wifiInfo.password = pskMatcher.group(1)
-                } else {
-                    wifiInfo.password = "无密码"
+                    wifiInfos.add(wifiInfo)
                 }
-                wifiInfos.add(wifiInfo)
             }
         }
         return wifiInfos
+    }
+
+    private fun parseXml(wifiData: StringBuffer): List<WifiInfo>? {
+        wifiInfos = ArrayList()
+        val factory = DocumentBuilderFactory.newInstance()
+        try {
+            byteArrayInputStream = ByteArrayInputStream(wifiData.toString().toByteArray(charset("UTF-8")))
+        } catch (e: UnsupportedEncodingException) {
+            e.printStackTrace()
+        }
+
+        try {
+            val builder = factory.newDocumentBuilder()
+            val document = builder.parse(byteArrayInputStream)
+            val root = document.documentElement
+            val items = root.getElementsByTagName("NetworkList")
+            if (items.length > 0) {
+                val network_list = (items.item(0) as Element).getElementsByTagName("Network")
+                for (i in 0 until network_list.length) {
+                    val item = (network_list.item(i) as Element).getElementsByTagName("WifiConfiguration")
+                    if (item.length < 1) {
+                        continue
+                    }
+                    val elem = item.item(0) as Element
+                    val wp_node_list = elem.getElementsByTagName("string")
+                    if (wp_node_list.length < 2) {
+                        continue
+                    }
+                    wifiInfo = WifiInfo()
+                    for (j in 0 until wp_node_list.length) {
+                        val e = wp_node_list.item(j) as Element
+                        val name = e.getAttribute("name")
+                        val value = e.firstChild.nodeValue
+
+                        if ("SSID" == name) {
+                            wifiInfo.ssid = value.replace("\"", "")
+                        } else if ("PreSharedKey" == name) {
+                            wifiInfo.password = value.replace("\"", "")
+                            wifiInfos.add(wifiInfo)
+                        }
+                    }
+                }
+            }
+        } catch (e: ParserConfigurationException) {
+            e.printStackTrace()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } catch (e: SAXException) {
+            e.printStackTrace()
+        }
+        return wifiInfos
+    }
+
+    private fun getSUProcess(): Process {
+        return Runtime.getRuntime().exec("su")
     }
 
 }

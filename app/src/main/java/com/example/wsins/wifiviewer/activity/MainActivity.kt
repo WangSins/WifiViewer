@@ -1,8 +1,5 @@
 package com.example.wsins.wifiviewer.activity
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -12,20 +9,17 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
 import android.widget.Toast
-
 import com.example.wsins.wifiviewer.R
-import com.example.wsins.wifiviewer.utils.WifiManage
 import com.example.wsins.wifiviewer.adapter.WifiAdapter
 import com.example.wsins.wifiviewer.info.WifiInfo
+import com.example.wsins.wifiviewer.utils.ClipBoardUtils
+import com.example.wsins.wifiviewer.utils.WifiManage
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity(), AdapterView.OnItemLongClickListener {
+class MainActivity : AppCompatActivity(), AdapterView.OnItemLongClickListener, AdapterView.OnItemClickListener {
 
     lateinit var wifiAdapter: WifiAdapter
     lateinit var mWifiInfos: List<WifiInfo>
-
-    lateinit var mclipData: ClipData
-    lateinit var mClipboardManager: ClipboardManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,7 +63,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemLongClickListener {
     @Throws(Exception::class)
     fun initData() {
         WifiManage().also {
-            mWifiInfos = it.Read()!!
+            mWifiInfos = it.readData()!!
         }
     }
 
@@ -81,15 +75,18 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemLongClickListener {
 
     private fun initListener() {
         lv_wifi_list.onItemLongClickListener = this
+        lv_wifi_list.onItemClickListener = this
+    }
+
+    override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+        ClipBoardUtils().copyClipBoard(this, "wifipwd", mWifiInfos[position].password)
+        Toast.makeText(this@MainActivity, "密码复制成功。", Toast.LENGTH_SHORT).show()
     }
 
     override fun onItemLongClick(parent: AdapterView<*>, view: View, position: Int, id: Long): Boolean {
-        mClipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        mclipData = ClipData.newPlainText("wifipwd", mWifiInfos[position].password).also {
-            mClipboardManager.primaryClip = it
-        }
-        Toast.makeText(this@MainActivity, "密码复制成功。", Toast.LENGTH_LONG).show()
-        return false
+        ClipBoardUtils().copyClipBoard(this, "wifissidpwd", "SSID：" + mWifiInfos[position].ssid + "\n密码：" + mWifiInfos[position].password)
+        Toast.makeText(this@MainActivity, "SSID和密码复制成功。", Toast.LENGTH_SHORT).show()
+        return true
     }
 
     private var mExitTime: Long = 0

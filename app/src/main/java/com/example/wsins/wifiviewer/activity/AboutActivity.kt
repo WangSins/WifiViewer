@@ -1,5 +1,6 @@
 package com.example.wsins.wifiviewer.activity
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -15,7 +16,7 @@ class AboutActivity : AppCompatActivity() {
     private var versionName: String? = null
 
     companion object {
-        val intent = Intent()
+        private val intent = Intent()
         fun move(context: Context) {
             intent.setClass(context, AboutActivity::class.java)
             context.startActivity(intent)
@@ -42,8 +43,13 @@ class AboutActivity : AppCompatActivity() {
         versionName = VersionCodeUtils().getVerName(this)
     }
 
+    @SuppressLint("SetTextI18n")
     private fun initView() {
-        tv_brief.text = "\u3000\u3000这是作者闲暇时间为自己备用机开发的一款App。\n目前支持的功能有：\n1.获取本地保存的WiFi信息。\n2.长按对密码进行复制。"
+        tv_brief.text = "\u3000\u3000这是作者闲暇时间为自己备用机开发的一款App。\n" +
+                "目前支持的功能有：\n" +
+                "1.获取本地保存的WiFi信息。\n" +
+                "2.点击对密码进行复制。\n" +
+                "3.长按对SSID和密码进行复制。"
         tv_version.text = "当前版本：v${versionName}"
     }
 
