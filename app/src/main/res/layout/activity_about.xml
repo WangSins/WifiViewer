@@ -8,10 +8,10 @@
     tools:context="com.example.wsins.wifiviewer.activity.AboutActivity">
 
     <ImageView
+        android:id="@+id/iv_icon"
         android:layout_width="96dp"
         android:layout_height="96dp"
-        android:layout_gravity="center_horizontal"
-        android:src="@mipmap/ic_launcher" />
+        android:layout_gravity="center_horizontal" />
 
     <TextView
         android:id="@+id/tv_name"
@@ -19,7 +19,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="10dp"
-        android:text="WiFiViewer"
         android:textSize="20sp"
         android:textStyle="bold" />
 
@@ -28,8 +27,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="5sp"
-        tools:text="版本：v1.0" />
+        android:layout_marginTop="5sp" />
 
     <TextView
         android:id="@+id/tv_brief"
@@ -38,15 +36,13 @@
         android:layout_marginTop="15dp"
         android:layout_weight="1"
         android:lineSpacingMultiplier="1.5"
-        android:textSize="16sp"
-        tools:text="这是作者闲暇时间为自己备用机开发的一款App。" />
+        android:textSize="16sp" />
 
     <TextView
         android:id="@+id/tv_copyright"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="15sp"
-        android:gravity="center_horizontal"
-        android:text="Copyright ©2015-2019 by WangSins\nAll Rights Reserved." />
+        android:gravity="center_horizontal" />
 
 </LinearLayout>

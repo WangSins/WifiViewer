@@ -8,6 +8,7 @@ import android.support.v7.app.ActionBar
 import android.support.v7.app.AppCompatActivity
 import android.view.MenuItem
 import com.example.wsins.wifiviewer.R
+import com.example.wsins.wifiviewer.R.mipmap.ic_launcher
 import com.example.wsins.wifiviewer.utils.VersionCodeUtils
 import kotlinx.android.synthetic.main.activity_about.*
 
@@ -47,11 +48,15 @@ class AboutActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun initView() {
+        iv_icon.setImageResource(ic_launcher)
+        tv_name.text = getString(R.string.app_name)
+        tv_version.text = "当前版本：${versionName} (${versionCode})"
         tv_brief.text = "目前支持的功能有：\n" +
                 "1.获取本地保存的WiFi信息。\n" +
                 "2.点击对密码进行复制。\n" +
                 "3.长按对SSID和密码进行复制。"
-        tv_version.text = "当前版本：${versionName} (${versionCode})"
+        tv_copyright.text = "Copyright ©2015-2019 by WangSins\n" +
+                "All Rights Reserved."
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {

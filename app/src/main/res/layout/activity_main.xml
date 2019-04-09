@@ -6,11 +6,18 @@
     android:orientation="vertical"
     tools:context=".activity.MainActivity">
 
-    <ListView
-        android:id="@+id/lv_wifi_list"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/srl_wifi_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:divider="#A8A8A8"
-        android:dividerHeight="1dp" />
+        android:layout_height="match_parent">
+
+        <ListView
+            android:id="@+id/lv_wifi_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:divider="#A8A8A8"
+            android:dividerHeight="1dp" />
+
+    </android.support.v4.widget.SwipeRefreshLayout>
 
 </LinearLayout>
