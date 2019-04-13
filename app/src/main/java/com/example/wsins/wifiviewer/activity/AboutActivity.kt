@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.ActionBar
 import android.support.v7.app.AppCompatActivity
 import android.view.MenuItem
 import com.example.wsins.wifiviewer.R
@@ -13,7 +12,6 @@ import com.example.wsins.wifiviewer.utils.VersionCodeUtils
 import kotlinx.android.synthetic.main.activity_about.*
 
 class AboutActivity : AppCompatActivity() {
-    private var actionBar: ActionBar? = null
     private var versionName: String? = null
     private var versionCode: Int? = null
 
@@ -34,7 +32,7 @@ class AboutActivity : AppCompatActivity() {
     }
 
     private fun initActionBar() {
-        actionBar = supportActionBar?.apply {
+        supportActionBar?.apply {
             title = "关于"
             setHomeButtonEnabled(true)
             setDisplayHomeAsUpEnabled(true)

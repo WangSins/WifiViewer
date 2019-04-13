@@ -1,10 +1,12 @@
 package com.example.wsins.wifiviewer.activity
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
 import android.os.Handler
 import android.support.design.widget.Snackbar
+import android.support.v4.view.GravityCompat
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
@@ -15,6 +17,8 @@ import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.TextView
+import com.example.wsins.wifiviewer.R
 import com.example.wsins.wifiviewer.adapter.WifiAdapter
 import com.example.wsins.wifiviewer.info.WifiInfo
 import com.example.wsins.wifiviewer.utils.ClipBoardUtils
@@ -28,9 +32,10 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener, 
     lateinit var mWifiAdapter: WifiAdapter
     lateinit var mWifiInfos: List<WifiInfo>
 
+    @SuppressLint("ResourceType")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(com.example.wsins.wifiviewer.R.layout.activity_main)
+        setContentView(R.layout.activity_main)
         initRoot()
         getData()
         initView()
@@ -51,52 +56,74 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener, 
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        val inflater = menuInflater
-        inflater.inflate(com.example.wsins.wifiviewer.R.menu.menu_main, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item?.itemId) {
-            com.example.wsins.wifiviewer.R.id.item_setting -> {
-                val intent = Intent().apply {
-                    action = "android.net.wifi.PICK_WIFI_NETWORK"
-                }
-                startActivity(intent)
-            }
-            com.example.wsins.wifiviewer.R.id.item_about -> {
-                AboutActivity.move(this)
-            }
-        }
-        return super.onOptionsItemSelected(item)
-    }
-
     private fun getData() {
         mWifiInfos = WifiManage().readData()!!
     }
 
     private fun initView() {
-        val layoutManager = LinearLayoutManager(this)
-        rv_wifi_list.layoutManager = layoutManager
-        layoutManager.orientation = OrientationHelper.VERTICAL
-        mWifiAdapter = WifiAdapter(this@MainActivity)
-        mWifiAdapter.setData(mWifiInfos)
+        setSupportActionBar(toolbar)
+        supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            setHomeButtonEnabled(true)
+            setHomeAsUpIndicator(R.drawable.ic_menu)
+        }
+        nav_view.apply {
+            setCheckedItem(R.id.nav_wifi_list)
+            getHeaderView(0).findViewById<TextView>(R.id.app_name).text = getString(R.string.app_name)
+            getHeaderView(0).findViewById<TextView>(R.id.wifi_count).text = "共${mWifiInfos.size}条Wifi信息"
+        }
+        nav_view.setNavigationItemSelectedListener {
+            when (it.itemId) {
+                R.id.nav_about -> {
+                    it.isCheckable = false
+                    it.isChecked = false
+                    AboutActivity.move(this)
+                }
+            }
+            drawer_layout.closeDrawers()
+            true
+        }
 
+        val layoutManager = LinearLayoutManager(this).apply {
+            orientation = OrientationHelper.VERTICAL
+        }
+        rv_wifi_list.layoutManager = layoutManager
+        mWifiAdapter = WifiAdapter(this)
+        mWifiAdapter.setData(mWifiInfos)
         rv_wifi_list.addItemDecoration(object : RecyclerView.ItemDecoration() {
 
             override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
                 super.getItemOffsets(outRect, view, parent, state)
-                outRect.set(0, 0, 0, DensityUtils.dip2px(this@MainActivity, 4.5f))
+                outRect.set(0, 0, 0, DensityUtils.dip2px(this@MainActivity, 8f))
             }
         })
-
         rv_wifi_list.adapter = mWifiAdapter
     }
 
     private fun initListener() {
         mWifiAdapter.setOnRecyclerViewItemClickListener(this)
         srl_wifi_list.setOnRefreshListener(this)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        val inflater = menuInflater
+        inflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when (item?.itemId) {
+            android.R.id.home -> {
+                drawer_layout.openDrawer(GravityCompat.START)
+            }
+            R.id.item_setting -> {
+                val intent = Intent().apply {
+                    action = "android.net.wifi.PICK_WIFI_NETWORK"
+                }
+                startActivity(intent)
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onItemClick(position: Int) {
@@ -112,6 +139,7 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener, 
     override fun onRefresh() {
         Handler().postDelayed({
             getData()
+            nav_view.getHeaderView(0).findViewById<TextView>(R.id.wifi_count).text = "共${mWifiInfos.size}条Wifi信息"
             mWifiAdapter.setData(mWifiInfos)
             mWifiAdapter.notifyDataSetChanged()
             srl_wifi_list.isRefreshing = false
