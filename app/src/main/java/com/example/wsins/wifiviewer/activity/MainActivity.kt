@@ -94,7 +94,11 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener, 
 
             override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
                 super.getItemOffsets(outRect, view, parent, state)
-                outRect.set(0, 0, 0, DensityUtils.dip2px(this@MainActivity, 8f))
+                outRect.run {
+                    left= DensityUtils.dip2px(this@MainActivity, 8f)
+                    right = DensityUtils.dip2px(this@MainActivity, 8f)
+                    top = DensityUtils.dip2px(this@MainActivity, 8f)
+                }
             }
         })
         rv_wifi_list.adapter = mWifiAdapter
