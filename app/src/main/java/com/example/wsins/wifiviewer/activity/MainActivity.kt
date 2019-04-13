@@ -1,23 +1,27 @@
 package com.example.wsins.wifiviewer.activity
 
 import android.content.Intent
+import android.graphics.Rect
 import android.os.Bundle
+import android.os.Handler
+import android.support.design.widget.Snackbar
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.OrientationHelper
+import android.support.v7.widget.RecyclerView
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.AdapterView
 import com.example.wsins.wifiviewer.adapter.WifiAdapter
 import com.example.wsins.wifiviewer.info.WifiInfo
 import com.example.wsins.wifiviewer.utils.ClipBoardUtils
-import com.example.wsins.wifiviewer.utils.ToastUtils
+import com.example.wsins.wifiviewer.utils.DensityUtils
 import com.example.wsins.wifiviewer.utils.WifiManage
 import kotlinx.android.synthetic.main.activity_main.*
-import android.os.Handler
 
-class MainActivity : AppCompatActivity(), AdapterView.OnItemLongClickListener, AdapterView.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener {
+class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener, WifiAdapter.OnItemClickListener {
 
     lateinit var mWifiAdapter: WifiAdapter
     lateinit var mWifiInfos: List<WifiInfo>
@@ -56,28 +60,36 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemLongClickListener, A
     }
 
     private fun initView() {
+        val layoutManager = LinearLayoutManager(this)
+        rv_wifi_list.layoutManager = layoutManager
+        layoutManager.orientation = OrientationHelper.VERTICAL
         mWifiAdapter = WifiAdapter(this@MainActivity)
         mWifiAdapter.setData(mWifiInfos)
-        lv_wifi_list.adapter = mWifiAdapter
+
+        rv_wifi_list.addItemDecoration(object : RecyclerView.ItemDecoration() {
+
+            override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
+                super.getItemOffsets(outRect, view, parent, state)
+                outRect.set(0, 0, 0, DensityUtils.dip2px(this@MainActivity,4.5f))
+            }
+        })
+
+        rv_wifi_list.adapter = mWifiAdapter
     }
 
     private fun initListener() {
-        lv_wifi_list.run {
-            onItemLongClickListener = this@MainActivity
-            onItemClickListener = this@MainActivity
-        }
+        mWifiAdapter.setOnRecyclerViewItemClickListener(this)
         srl_wifi_list.setOnRefreshListener(this)
     }
 
-    override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+    override fun onItemClick(position: Int) {
         ClipBoardUtils().copyClipBoard(this, "wifipwd", mWifiInfos[position].password)
-        ToastUtils.showToast(this, "已复制密码 ${mWifiInfos[position].password} 到剪贴板。")
+        Snackbar.make(rv_wifi_list,"已复制密码 ${mWifiInfos[position].password} 到剪贴板。",Snackbar.LENGTH_SHORT).show()
     }
 
-    override fun onItemLongClick(parent: AdapterView<*>, view: View, position: Int, id: Long): Boolean {
+    override fun onItemLongClick(position: Int) {
         ClipBoardUtils().copyClipBoard(this, "wifissidpwd", "SSID：" + mWifiInfos[position].ssid + "\n密码：" + mWifiInfos[position].password)
-        ToastUtils.showToast(this, "已复制 ${mWifiInfos[position].ssid} 的SSID和密码到剪贴板。")
-        return true
+        Snackbar.make(rv_wifi_list,"已复制 ${mWifiInfos[position].ssid} 的SSID和密码到剪贴板。",Snackbar.LENGTH_SHORT).show()
     }
 
     override fun onRefresh() {
@@ -86,6 +98,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemLongClickListener, A
             mWifiAdapter.setData(mWifiInfos)
             mWifiAdapter.notifyDataSetChanged()
             srl_wifi_list.isRefreshing = false
+            Snackbar.make(rv_wifi_list,"刷新完成。",Snackbar.LENGTH_SHORT).show()
         }, 500)
     }
 
@@ -93,7 +106,8 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemLongClickListener, A
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if ((System.currentTimeMillis() - mExitTime) > 2000) {
-                ToastUtils.showToast(this, "再按一次退出程序。")
+                Snackbar.make(rv_wifi_list,"再按一次退出程序。",Snackbar.LENGTH_SHORT).show()
+
                 mExitTime = System.currentTimeMillis()
             } else {
                 finish()
