@@ -10,7 +10,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:text="已保存6个Wifi密码"
         android:textColor="#FFFFFF"
         android:textSize="14sp" />
 
@@ -19,7 +18,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@id/wifi_count"
-        android:text="Wifi Viewer"
         android:textColor="#FFFFFF"
         android:textStyle="bold"
         android:textSize="18sp" />
