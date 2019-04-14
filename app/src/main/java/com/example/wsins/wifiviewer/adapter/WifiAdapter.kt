@@ -10,20 +10,20 @@ import com.example.wsins.wifiviewer.info.WifiInfo
 
 class WifiAdapter(val mContext: Context) : RecyclerView.Adapter<WifiAdapter.WifiViewHolder>() {
 
-    lateinit var mWifiInfos: List<WifiInfo>
+    lateinit var mWifiInfos: MutableList<WifiInfo>
 
-    fun setData(wifiInfos: List<WifiInfo>) {
+    fun setData(wifiInfos: MutableList<WifiInfo>) {
         mWifiInfos = wifiInfos
     }
 
-    private lateinit var onRecyclerViewItemClickListener: OnItemClickListener
+    private lateinit var onRecyclerViewItemClickListener: OnRVItemClickListener
 
-    interface OnItemClickListener {
-        fun onItemClick(position: Int)
-        fun onItemLongClick(position: Int)
+    interface OnRVItemClickListener {
+        fun onRVItemClick(position: Int)
+        fun onRVItemLongClick(position: Int)
     }
 
-    fun setOnRecyclerViewItemClickListener(onItemClickListener: OnItemClickListener) {
+    fun setOnRVItemClickListener(onItemClickListener: OnRVItemClickListener) {
         onRecyclerViewItemClickListener = onItemClickListener
     }
 
@@ -38,9 +38,9 @@ class WifiAdapter(val mContext: Context) : RecyclerView.Adapter<WifiAdapter.Wifi
     override fun onBindViewHolder(p0: WifiViewHolder, p1: Int) {
         p0.tv_wifi_name.text = mWifiInfos[p1].ssid
         p0.tv_wifi_pwd.text = mWifiInfos[p1].password
-        p0.itemView.setOnClickListener { onRecyclerViewItemClickListener.onItemClick(p1) }
+        p0.itemView.setOnClickListener { onRecyclerViewItemClickListener.onRVItemClick(p1) }
         p0.itemView.setOnLongClickListener {
-            onRecyclerViewItemClickListener.onItemLongClick(p1)
+            onRecyclerViewItemClickListener.onRVItemLongClick(p1)
             true
         }
     }

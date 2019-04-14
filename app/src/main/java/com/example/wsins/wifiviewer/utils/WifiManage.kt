@@ -4,25 +4,19 @@ import com.example.wsins.wifiviewer.info.WifiInfo
 import org.w3c.dom.Element
 import org.xml.sax.SAXException
 import java.io.*
-import java.util.*
 import java.util.regex.Pattern
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.parsers.ParserConfigurationException
 
 class WifiManage {
 
-    lateinit var wifiInfos: MutableList<WifiInfo>
     lateinit var wifiInfo: WifiInfo
+    var wifiInfos: MutableList<WifiInfo> = mutableListOf()
 
-    lateinit var process: Process
-
-    private var dataOutputStream: DataOutputStream? = null
-    private var dataInputStream: DataInputStream? = null
-    lateinit var byteArrayInputStream: ByteArrayInputStream
-
-    private var line: String? = null
-
-    fun readData(): List<WifiInfo>? {
+    fun readData(): MutableList<WifiInfo>? {
+        var process: Process? = null
+        var dataOutputStream: DataOutputStream? = null
+        var dataInputStream: DataInputStream? = null
         val isO: Boolean
         val fileName: String
         if (android.os.Build.VERSION.SDK_INT >= 26) {
@@ -34,7 +28,7 @@ class WifiManage {
         }
         val wifiData = StringBuffer()
         try {
-            process = getSUProcess()
+            process = RootUtils().getSUProcess()
             dataOutputStream = DataOutputStream(process.outputStream).apply {
                 writeBytes("cat /data/misc/wifi/$fileName\n")
                 writeBytes("exit\n")
@@ -43,6 +37,7 @@ class WifiManage {
             dataInputStream = DataInputStream(process.inputStream)
             val inputStreamReader = InputStreamReader(dataInputStream, "UTF-8")
             val bufferedReader = BufferedReader(inputStreamReader)
+            var line: String? = null
             while ({ line = bufferedReader.readLine();line }() != null) {
                 wifiData.append(line)
             }
@@ -55,7 +50,7 @@ class WifiManage {
             try {
                 dataOutputStream?.close()
                 dataInputStream?.close()
-                process.destroy()
+                process?.destroy()
             } catch (e: Exception) {
                 throw e
             }
@@ -67,8 +62,7 @@ class WifiManage {
         }
     }
 
-    private fun parseConf(wifiData: StringBuffer): List<WifiInfo>? {
-        wifiInfos = ArrayList()
+    private fun parseConf(wifiData: StringBuffer): MutableList<WifiInfo>? {
         val network = Pattern.compile("network=\\{([^\\}]+)\\}", Pattern.DOTALL)
         val networkMatcher = network.matcher(wifiData.toString())
         while (networkMatcher.find()) {
@@ -89,8 +83,8 @@ class WifiManage {
         return wifiInfos
     }
 
-    private fun parseXml(wifiData: StringBuffer): List<WifiInfo>? {
-        wifiInfos = ArrayList()
+    private fun parseXml(wifiData: StringBuffer): MutableList<WifiInfo>? {
+        var byteArrayInputStream: ByteArrayInputStream? = null
         val factory = DocumentBuilderFactory.newInstance()
         try {
             byteArrayInputStream = ByteArrayInputStream(wifiData.toString().toByteArray(charset("UTF-8")))
@@ -138,10 +132,6 @@ class WifiManage {
             e.printStackTrace()
         }
         return wifiInfos
-    }
-
-    private fun getSUProcess(): Process {
-        return Runtime.getRuntime().exec("su")
     }
 
 }

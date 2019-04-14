@@ -26,8 +26,8 @@ class RootUtils {
         var os: DataOutputStream? = null
         val rt: Int
         try {
-            process = Runtime.getRuntime().exec("su")
-            os = DataOutputStream(process!!.outputStream)
+            process = getSUProcess()
+            os = DataOutputStream(process?.outputStream)
             os.writeBytes("system/bin/mount -o rw,remount -t rootfs /data" + "\n")
             os.writeBytes("exit\n")
             os.flush()
@@ -59,4 +59,6 @@ class RootUtils {
             false
         }
     }
+
+    fun getSUProcess(): Process = Runtime.getRuntime().exec("su")
 }

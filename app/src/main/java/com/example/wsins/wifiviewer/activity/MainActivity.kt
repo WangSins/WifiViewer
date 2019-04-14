@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.support.design.widget.Snackbar
 import android.support.v4.view.GravityCompat
-import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
@@ -27,26 +26,39 @@ import com.example.wsins.wifiviewer.utils.RootUtils
 import com.example.wsins.wifiviewer.utils.WifiManage
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener, WifiAdapter.OnItemClickListener {
+class MainActivity : AppCompatActivity() {
 
     lateinit var mWifiAdapter: WifiAdapter
-    lateinit var mWifiInfos: List<WifiInfo>
+    var mWifiInfos: MutableList<WifiInfo> = mutableListOf()
 
     @SuppressLint("ResourceType")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
         initRoot()
-        getData()
-        initView()
-        initListener()
     }
 
     private fun initRoot() {
-        if (!RootUtils().checkRoot()) {
+        if (RootUtils().isRoot) {
+            if (!RootUtils().checkRoot()) {
+                AlertDialog.Builder(this).run {
+                    setTitle("Root权限检测")
+                    setMessage("无法获取Root权限。")
+                    setCancelable(false)
+                    setPositiveButton("退出") { _, _ ->
+                        this@MainActivity.finish()
+                    }
+                    show()
+                }
+            } else {
+                initView()
+                getData()
+                setData()
+                initListener()
+            }
+        } else {
             AlertDialog.Builder(this).run {
                 setTitle("Root权限检测")
-                setMessage("未获取Root权限。")
+                setMessage("本设备未Root。")
                 setCancelable(false)
                 setPositiveButton("退出") { _, _ ->
                     this@MainActivity.finish()
@@ -60,17 +72,64 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener, 
         mWifiInfos = WifiManage().readData()!!
     }
 
-    private fun initView() {
-        setSupportActionBar(toolbar)
-        supportActionBar?.apply {
-            setDisplayHomeAsUpEnabled(true)
-            setHomeButtonEnabled(true)
-            setHomeAsUpIndicator(R.drawable.ic_menu)
-        }
+    private fun setData() {
         nav_view.apply {
             setCheckedItem(R.id.nav_wifi_list)
             getHeaderView(0).findViewById<TextView>(R.id.app_name).text = getString(R.string.app_name)
             getHeaderView(0).findViewById<TextView>(R.id.wifi_count).text = "共${mWifiInfos.size}条Wifi信息"
+        }
+        mWifiAdapter.setData(mWifiInfos)
+        mWifiAdapter.notifyDataSetChanged()
+    }
+
+    private fun initView() {
+        setContentView(R.layout.activity_main)
+        setSupportActionBar(toolbar)
+        supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            setHomeButtonEnabled(true)
+            setHomeAsUpIndicator(R.drawable.ic_menu_black_24dp)
+        }
+
+        val layoutManager = LinearLayoutManager(this).apply {
+            orientation = OrientationHelper.VERTICAL
+        }
+        rv_wifi_list.layoutManager = layoutManager
+        mWifiAdapter = WifiAdapter(this)
+        rv_wifi_list.addItemDecoration(object : RecyclerView.ItemDecoration() {
+
+            override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
+                super.getItemOffsets(outRect, view, parent, state)
+                outRect.run {
+                    left = DensityUtils.dip2px(this@MainActivity, 8f)
+                    right = DensityUtils.dip2px(this@MainActivity, 8f)
+                    top = DensityUtils.dip2px(this@MainActivity, 8f)
+                }
+            }
+        })
+        rv_wifi_list.adapter = mWifiAdapter
+    }
+
+    private fun initListener() {
+        mWifiAdapter.setOnRVItemClickListener(object : WifiAdapter.OnRVItemClickListener {
+            override fun onRVItemClick(position: Int) {
+                ClipBoardUtils().copyClipBoard(this@MainActivity, "wifipwd", mWifiInfos[position].password)
+                Snackbar.make(rv_wifi_list, "已复制密码 ${mWifiInfos[position].password} 到剪贴板。", Snackbar.LENGTH_SHORT).show()
+            }
+
+            override fun onRVItemLongClick(position: Int) {
+                ClipBoardUtils().copyClipBoard(this@MainActivity, "wifissidpwd", "SSID：" + mWifiInfos[position].ssid + "\n密码：" + mWifiInfos[position].password)
+                Snackbar.make(rv_wifi_list, "已复制 ${mWifiInfos[position].ssid} 的SSID和密码到剪贴板。", Snackbar.LENGTH_SHORT).show()
+            }
+
+        })
+        srl_wifi_list.setOnRefreshListener {
+            Handler().postDelayed({
+                getData()
+                setData()
+                srl_wifi_list.isRefreshing = false
+                Snackbar.make(rv_wifi_list, "刷新完成。", Snackbar.LENGTH_SHORT).show()
+            }, 500)
         }
         nav_view.setNavigationItemSelectedListener {
             when (it.itemId) {
@@ -83,30 +142,6 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener, 
             drawer_layout.closeDrawers()
             true
         }
-
-        val layoutManager = LinearLayoutManager(this).apply {
-            orientation = OrientationHelper.VERTICAL
-        }
-        rv_wifi_list.layoutManager = layoutManager
-        mWifiAdapter = WifiAdapter(this)
-        mWifiAdapter.setData(mWifiInfos)
-        rv_wifi_list.addItemDecoration(object : RecyclerView.ItemDecoration() {
-
-            override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
-                super.getItemOffsets(outRect, view, parent, state)
-                outRect.run {
-                    left= DensityUtils.dip2px(this@MainActivity, 8f)
-                    right = DensityUtils.dip2px(this@MainActivity, 8f)
-                    top = DensityUtils.dip2px(this@MainActivity, 8f)
-                }
-            }
-        })
-        rv_wifi_list.adapter = mWifiAdapter
-    }
-
-    private fun initListener() {
-        mWifiAdapter.setOnRecyclerViewItemClickListener(this)
-        srl_wifi_list.setOnRefreshListener(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -128,27 +163,6 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener, 
             }
         }
         return super.onOptionsItemSelected(item)
-    }
-
-    override fun onItemClick(position: Int) {
-        ClipBoardUtils().copyClipBoard(this, "wifipwd", mWifiInfos[position].password)
-        Snackbar.make(rv_wifi_list, "已复制密码 ${mWifiInfos[position].password} 到剪贴板。", Snackbar.LENGTH_SHORT).show()
-    }
-
-    override fun onItemLongClick(position: Int) {
-        ClipBoardUtils().copyClipBoard(this, "wifissidpwd", "SSID：" + mWifiInfos[position].ssid + "\n密码：" + mWifiInfos[position].password)
-        Snackbar.make(rv_wifi_list, "已复制 ${mWifiInfos[position].ssid} 的SSID和密码到剪贴板。", Snackbar.LENGTH_SHORT).show()
-    }
-
-    override fun onRefresh() {
-        Handler().postDelayed({
-            getData()
-            nav_view.getHeaderView(0).findViewById<TextView>(R.id.wifi_count).text = "共${mWifiInfos.size}条Wifi信息"
-            mWifiAdapter.setData(mWifiInfos)
-            mWifiAdapter.notifyDataSetChanged()
-            srl_wifi_list.isRefreshing = false
-            Snackbar.make(rv_wifi_list, "刷新完成。", Snackbar.LENGTH_SHORT).show()
-        }, 500)
     }
 
     private var mExitTime: Long = 0
