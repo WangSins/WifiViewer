@@ -10,7 +10,7 @@ import com.example.wsins.wifiviewer.info.WifiInfo
 
 class WifiAdapter(val mContext: Context) : RecyclerView.Adapter<WifiAdapter.WifiViewHolder>() {
 
-    lateinit var mWifiInfos: MutableList<WifiInfo>
+    private var mWifiInfos: MutableList<WifiInfo> = mutableListOf()
 
     fun setData(wifiInfos: MutableList<WifiInfo>) {
         mWifiInfos = wifiInfos

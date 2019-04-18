@@ -12,6 +12,7 @@ import com.example.wsins.wifiviewer.utils.VersionCodeUtils
 import kotlinx.android.synthetic.main.activity_about.*
 
 class AboutActivity : AppCompatActivity() {
+
     private var versionName: String? = null
     private var versionCode: Int? = null
 

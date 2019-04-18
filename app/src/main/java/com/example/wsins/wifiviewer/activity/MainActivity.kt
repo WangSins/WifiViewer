@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
 import android.os.Handler
+import android.os.Message
 import android.support.design.widget.Snackbar
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.AlertDialog
@@ -25,11 +26,39 @@ import com.example.wsins.wifiviewer.utils.DensityUtils
 import com.example.wsins.wifiviewer.utils.RootUtils
 import com.example.wsins.wifiviewer.utils.WifiManage
 import kotlinx.android.synthetic.main.activity_main.*
+import java.lang.ref.WeakReference
+import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var mWifiAdapter: WifiAdapter
-    var mWifiInfos: MutableList<WifiInfo> = mutableListOf()
+    private var mWifiInfos: MutableList<WifiInfo> = mutableListOf()
+    private var mHandler = MyHandler(this)
+    private lateinit var mWifiAdapter: WifiAdapter
+
+    companion object {
+        const val INIT_DATA = 0
+        const val REFRESH_DATA = 1
+
+        private class MyHandler(activity: MainActivity) : Handler() {
+            private val mActivity: WeakReference<MainActivity> = WeakReference(activity)
+            override fun handleMessage(msg: Message?) {
+                super.handleMessage(msg)
+                val activity = mActivity.get()
+                when (msg?.what) {
+                    INIT_DATA -> activity?.setData()
+                    REFRESH_DATA -> {
+                        activity?.run {
+                            setData()
+                            srl_wifi_list.also {
+                                it.isRefreshing = false
+                                Snackbar.make(it, "刷新完成。", Snackbar.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     @SuppressLint("ResourceType")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,9 +79,9 @@ class MainActivity : AppCompatActivity() {
                     show()
                 }
             } else {
+                initActionBar()
                 initView()
                 getData()
-                setData()
                 initListener()
             }
         } else {
@@ -68,8 +97,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun getData() {
-        mWifiInfos = WifiManage().readData()!!
+    private fun getData(what: Int = INIT_DATA) {
+        thread(true) {
+            val msg = Message.obtain().also {
+                it.what = what
+            }
+            mWifiInfos = WifiManage().readData()!!
+            mHandler.sendMessage(msg)
+        }
     }
 
     private fun setData() {
@@ -82,7 +117,7 @@ class MainActivity : AppCompatActivity() {
         mWifiAdapter.notifyDataSetChanged()
     }
 
-    private fun initView() {
+    private fun initActionBar() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
         supportActionBar?.apply {
@@ -90,7 +125,9 @@ class MainActivity : AppCompatActivity() {
             setHomeButtonEnabled(true)
             setHomeAsUpIndicator(R.drawable.ic_menu_black_24dp)
         }
+    }
 
+    private fun initView() {
         val layoutManager = LinearLayoutManager(this).apply {
             orientation = OrientationHelper.VERTICAL
         }
@@ -125,10 +162,7 @@ class MainActivity : AppCompatActivity() {
         })
         srl_wifi_list.setOnRefreshListener {
             Handler().postDelayed({
-                getData()
-                setData()
-                srl_wifi_list.isRefreshing = false
-                Snackbar.make(rv_wifi_list, "刷新完成。", Snackbar.LENGTH_SHORT).show()
+                getData(REFRESH_DATA)
             }, 500)
         }
         nav_view.setNavigationItemSelectedListener {
@@ -152,9 +186,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when (item?.itemId) {
-            android.R.id.home -> {
-                drawer_layout.openDrawer(GravityCompat.START)
-            }
+            android.R.id.home -> drawer_layout.openDrawer(GravityCompat.START)
             R.id.item_setting -> {
                 val intent = Intent().apply {
                     action = "android.net.wifi.PICK_WIFI_NETWORK"
@@ -177,6 +209,11 @@ class MainActivity : AppCompatActivity() {
             return true
         }
         return super.onKeyDown(keyCode, event)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mHandler.removeCallbacksAndMessages(null)
     }
 
 }
