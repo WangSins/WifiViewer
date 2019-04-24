@@ -14,6 +14,7 @@ class WifiAdapter(val mContext: Context) : RecyclerView.Adapter<WifiAdapter.Wifi
 
     fun setData(wifiInfos: MutableList<WifiInfo>) {
         mWifiInfos = wifiInfos
+        notifyDataSetChanged()
     }
 
     private lateinit var onRecyclerViewItemClickListener: OnRVItemClickListener

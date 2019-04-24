@@ -114,7 +114,6 @@ class MainActivity : AppCompatActivity() {
             getHeaderView(0).findViewById<TextView>(R.id.wifi_count).text = "共${mWifiInfos.size}条Wifi信息"
         }
         mWifiAdapter.setData(mWifiInfos)
-        mWifiAdapter.notifyDataSetChanged()
     }
 
     private fun initActionBar() {
