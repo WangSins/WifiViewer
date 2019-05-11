@@ -8,11 +8,19 @@
             android:icon="@drawable/ic_list_black_24dp"
             android:title="Wifi信息列表" />
 
-       <item
-            android:id="@+id/nav_about"
-           android:icon="@drawable/ic_info_outline_black_24dp"
-            android:title="关于" />
-
     </group>
+
+    <item android:title="更多">
+        <menu>
+            <item
+                android:id="@+id/nav_share"
+                android:icon="@drawable/ic_share_black_24dp"
+                android:title="分享" />
+            <item
+                android:id="@+id/nav_about"
+                android:icon="@drawable/ic_info_outline_black_24dp"
+                android:title="关于" />
+        </menu>
+    </item>
 
 </menu>

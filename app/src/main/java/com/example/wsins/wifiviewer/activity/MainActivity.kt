@@ -149,13 +149,23 @@ class MainActivity : AppCompatActivity() {
     private fun initListener() {
         mWifiAdapter.setOnRVItemClickListener(object : WifiAdapter.OnRVItemClickListener {
             override fun onRVItemClick(position: Int) {
-                ClipBoardUtils().copyClipBoard(this@MainActivity, "wifipwd", mWifiInfos[position].password)
-                Snackbar.make(rv_wifi_list, "已复制密码 ${mWifiInfos[position].password} 到剪贴板。", Snackbar.LENGTH_SHORT).show()
+                val textWifipw = mWifiInfos[position].password
+                ClipBoardUtils().copyClipBoard(this@MainActivity, "wifipwd", textWifipw)
+                Snackbar.make(rv_wifi_list, "已复制密码 ${mWifiInfos[position].password} 到剪贴板。", Snackbar.LENGTH_SHORT)
+                        .setAction("分享") {
+                            textShare("分享密码", textWifipw)
+                        }
+                        .show()
             }
 
             override fun onRVItemLongClick(position: Int) {
-                ClipBoardUtils().copyClipBoard(this@MainActivity, "wifissidpwd", "SSID：" + mWifiInfos[position].ssid + "\n密码：" + mWifiInfos[position].password)
-                Snackbar.make(rv_wifi_list, "已复制 ${mWifiInfos[position].ssid} 的SSID和密码到剪贴板。", Snackbar.LENGTH_SHORT).show()
+                val textWifissidpwd = "SSID：" + mWifiInfos[position].ssid + "\n密码：" + mWifiInfos[position].password
+                ClipBoardUtils().copyClipBoard(this@MainActivity, "wifissidpwd", textWifissidpwd)
+                Snackbar.make(rv_wifi_list, "已复制 ${mWifiInfos[position].ssid} 的SSID和密码到剪贴板。", Snackbar.LENGTH_SHORT)
+                        .setAction("分享") {
+                            textShare("分享SSID和密码", textWifissidpwd)
+                        }
+                        .show()
             }
 
         })
@@ -166,15 +176,24 @@ class MainActivity : AppCompatActivity() {
         }
         nav_view.setNavigationItemSelectedListener {
             when (it.itemId) {
+                R.id.nav_share -> {
+                    textShare("分享APP", "我正在使用@Wifi Viewer，查看并复制WIFI的SSID和密码。")
+                }
                 R.id.nav_about -> {
-                    it.isCheckable = false
-                    it.isChecked = false
                     AboutActivity.move(this)
                 }
             }
             drawer_layout.closeDrawers()
             true
         }
+    }
+
+    private fun textShare(title: String, text: String) {
+        val intent = Intent(Intent.ACTION_SEND)
+        intent.type = "text/plain"
+        intent.putExtra(Intent.EXTRA_TEXT, text)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        startActivity(Intent.createChooser(intent, title))
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -198,14 +217,19 @@ class MainActivity : AppCompatActivity() {
 
     private var mExitTime: Long = 0
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if ((System.currentTimeMillis() - mExitTime) > 2000) {
-                Snackbar.make(rv_wifi_list, "再按一次退出程序。", Snackbar.LENGTH_SHORT).show()
-                mExitTime = System.currentTimeMillis()
-            } else {
-                finish()
-            }
+        if (drawer_layout.isDrawerOpen(GravityCompat.START)) {
+            drawer_layout.closeDrawers()
             return true
+        } else {
+            if (keyCode == KeyEvent.KEYCODE_BACK) {
+                if ((System.currentTimeMillis() - mExitTime) > 2000) {
+                    Snackbar.make(rv_wifi_list, "再按一次退出程序。", Snackbar.LENGTH_SHORT).show()
+                    mExitTime = System.currentTimeMillis()
+                } else {
+                    finish()
+                }
+                return true
+            }
         }
         return super.onKeyDown(keyCode, event)
     }
