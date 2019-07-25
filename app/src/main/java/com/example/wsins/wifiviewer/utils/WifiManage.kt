@@ -11,7 +11,7 @@ import javax.xml.parsers.ParserConfigurationException
 class WifiManage {
 
     lateinit var wifiInfo: WifiInfo
-    var wifiInfos: MutableList<WifiInfo> = mutableListOf()
+    var wifiInfoList: MutableList<WifiInfo> = mutableListOf()
 
     fun readData(): MutableList<WifiInfo>? {
         var process: Process? = null
@@ -76,11 +76,11 @@ class WifiManage {
                 val pskMatcher = psk.matcher(networkBlock)
                 if (pskMatcher.find()) {
                     wifiInfo.password = pskMatcher.group(1)
-                    wifiInfos.add(wifiInfo)
+                    wifiInfoList.add(wifiInfo)
                 }
             }
         }
-        return wifiInfos
+        return wifiInfoList
     }
 
     private fun parseXml(wifiData: StringBuffer): MutableList<WifiInfo>? {
@@ -98,20 +98,20 @@ class WifiManage {
             val root = document.documentElement
             val items = root.getElementsByTagName("NetworkList")
             if (items.length > 0) {
-                val network_list = (items.item(0) as Element).getElementsByTagName("Network")
-                for (i in 0 until network_list.length) {
-                    val item = (network_list.item(i) as Element).getElementsByTagName("WifiConfiguration")
+                val networkList = (items.item(0) as Element).getElementsByTagName("Network")
+                for (i in 0 until networkList.length) {
+                    val item = (networkList.item(i) as Element).getElementsByTagName("WifiConfiguration")
                     if (item.length < 1) {
                         continue
                     }
                     val elem = item.item(0) as Element
-                    val wp_node_list = elem.getElementsByTagName("string")
-                    if (wp_node_list.length < 2) {
+                    val wpNodeList = elem.getElementsByTagName("string")
+                    if (wpNodeList.length < 2) {
                         continue
                     }
                     wifiInfo = WifiInfo()
-                    for (j in 0 until wp_node_list.length) {
-                        val e = wp_node_list.item(j) as Element
+                    for (j in 0 until wpNodeList.length) {
+                        val e = wpNodeList.item(j) as Element
                         val name = e.getAttribute("name")
                         val value = e.firstChild.nodeValue
 
@@ -119,7 +119,7 @@ class WifiManage {
                             wifiInfo.ssid = value.replace("\"", "")
                         } else if ("PreSharedKey" == name) {
                             wifiInfo.password = value.replace("\"", "")
-                            wifiInfos.add(wifiInfo)
+                            wifiInfoList.add(wifiInfo)
                         }
                     }
                 }
@@ -131,7 +131,7 @@ class WifiManage {
         } catch (e: SAXException) {
             e.printStackTrace()
         }
-        return wifiInfos
+        return wifiInfoList
     }
 
 }

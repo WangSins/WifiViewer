@@ -36,6 +36,7 @@
                 android:id="@+id/rv_wifi_list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
+
         </android.support.v4.widget.SwipeRefreshLayout>
 
     </android.support.design.widget.CoordinatorLayout>
@@ -47,6 +48,5 @@
         android:layout_gravity="start"
         app:headerLayout="@layout/nav_header"
         app:menu="@menu/nav_menu" />
-
 
 </android.support.v4.widget.DrawerLayout>

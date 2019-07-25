@@ -31,7 +31,7 @@ import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
 
-    private var mWifiInfos: MutableList<WifiInfo> = mutableListOf()
+    private var mWifiInfoList: MutableList<WifiInfo> = mutableListOf()
     private var mHandler = MyHandler(this)
     private lateinit var mWifiAdapter: WifiAdapter
 
@@ -102,7 +102,7 @@ class MainActivity : AppCompatActivity() {
             val msg = Message.obtain().also {
                 it.what = what
             }
-            mWifiInfos = WifiManage().readData()!!
+            mWifiInfoList = WifiManage().readData()!!
             mHandler.sendMessage(msg)
         }
     }
@@ -111,9 +111,9 @@ class MainActivity : AppCompatActivity() {
         nav_view.apply {
             setCheckedItem(R.id.nav_wifi_list)
             getHeaderView(0).findViewById<TextView>(R.id.app_name).text = getString(R.string.app_name)
-            getHeaderView(0).findViewById<TextView>(R.id.wifi_count).text = "共${mWifiInfos.size}条Wifi信息"
+            getHeaderView(0).findViewById<TextView>(R.id.wifi_count).text = "共${mWifiInfoList.size}条Wifi信息"
         }
-        mWifiAdapter.setData(mWifiInfos)
+        mWifiAdapter.setData(mWifiInfoList)
     }
 
     private fun initActionBar() {
@@ -131,7 +131,7 @@ class MainActivity : AppCompatActivity() {
             orientation = OrientationHelper.VERTICAL
         }
         rv_wifi_list.layoutManager = layoutManager
-        mWifiAdapter = WifiAdapter(this)
+        mWifiAdapter = WifiAdapter()
         rv_wifi_list.addItemDecoration(object : RecyclerView.ItemDecoration() {
 
             override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
@@ -149,21 +149,21 @@ class MainActivity : AppCompatActivity() {
     private fun initListener() {
         mWifiAdapter.setOnRVItemClickListener(object : WifiAdapter.OnRVItemClickListener {
             override fun onRVItemClick(position: Int) {
-                val textWifipw = mWifiInfos[position].password
-                ClipBoardUtils().copyClipBoard(this@MainActivity, "wifipwd", textWifipw)
-                Snackbar.make(rv_wifi_list, "已复制密码 ${mWifiInfos[position].password} 到剪贴板。", Snackbar.LENGTH_SHORT)
+                val textWifiPW = mWifiInfoList[position].password
+                ClipBoardUtils().copyClipBoard(this@MainActivity, "textWifiPW", textWifiPW)
+                Snackbar.make(rv_wifi_list, "已复制密码 ${mWifiInfoList[position].password} 到剪贴板。", Snackbar.LENGTH_SHORT)
                         .setAction("分享") {
-                            textShare("分享密码", textWifipw)
+                            textShare("分享密码", textWifiPW)
                         }
                         .show()
             }
 
             override fun onRVItemLongClick(position: Int) {
-                val textWifissidpwd = "SSID：" + mWifiInfos[position].ssid + "\n密码：" + mWifiInfos[position].password
-                ClipBoardUtils().copyClipBoard(this@MainActivity, "wifissidpwd", textWifissidpwd)
-                Snackbar.make(rv_wifi_list, "已复制 ${mWifiInfos[position].ssid} 的SSID和密码到剪贴板。", Snackbar.LENGTH_SHORT)
+                val textWifiSSIDAndPW = "SSID：" + mWifiInfoList[position].ssid + "\n密码：" + mWifiInfoList[position].password
+                ClipBoardUtils().copyClipBoard(this@MainActivity, "textWifiSSIDAndPW", textWifiSSIDAndPW)
+                Snackbar.make(rv_wifi_list, "已复制 ${mWifiInfoList[position].ssid} 的SSID和密码到剪贴板。", Snackbar.LENGTH_SHORT)
                         .setAction("分享") {
-                            textShare("分享SSID和密码", textWifissidpwd)
+                            textShare("分享SSID和密码", textWifiSSIDAndPW)
                         }
                         .show()
             }

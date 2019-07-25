@@ -1,6 +1,5 @@
 package com.example.wsins.wifiviewer.adapter
 
-import android.content.Context
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -8,12 +7,12 @@ import android.view.ViewGroup
 import android.widget.TextView
 import com.example.wsins.wifiviewer.info.WifiInfo
 
-class WifiAdapter(val mContext: Context) : RecyclerView.Adapter<WifiAdapter.WifiViewHolder>() {
+class WifiAdapter : RecyclerView.Adapter<WifiAdapter.WifiViewHolder>() {
 
-    private var mWifiInfos: MutableList<WifiInfo> = mutableListOf()
+    private var mWifiInfoList: MutableList<WifiInfo> = mutableListOf()
 
-    fun setData(wifiInfos: MutableList<WifiInfo>) {
-        mWifiInfos = wifiInfos
+    fun setData(wifiInfoList: MutableList<WifiInfo>) {
+        mWifiInfoList = wifiInfoList
         notifyDataSetChanged()
     }
 
@@ -30,15 +29,15 @@ class WifiAdapter(val mContext: Context) : RecyclerView.Adapter<WifiAdapter.Wifi
 
 
     override fun onCreateViewHolder(p0: ViewGroup, p1: Int): WifiViewHolder {
-        val mItemView: View = LayoutInflater.from(mContext).inflate(com.example.wsins.wifiviewer.R.layout.item_wifi, null)
+        val mItemView: View = LayoutInflater.from(p0.context).inflate(com.example.wsins.wifiviewer.R.layout.item_wifi, null)
         return WifiViewHolder(mItemView)
     }
 
-    override fun getItemCount(): Int = mWifiInfos.size
+    override fun getItemCount(): Int = mWifiInfoList.size
 
     override fun onBindViewHolder(p0: WifiViewHolder, p1: Int) {
-        p0.tv_wifi_name.text = mWifiInfos[p1].ssid
-        p0.tv_wifi_pwd.text = mWifiInfos[p1].password
+        p0.tvWifiName.text = mWifiInfoList[p1].ssid
+        p0.tvWifiPwd.text = mWifiInfoList[p1].password
         p0.itemView.setOnClickListener { onRecyclerViewItemClickListener.onRVItemClick(p1) }
         p0.itemView.setOnLongClickListener {
             onRecyclerViewItemClickListener.onRVItemLongClick(p1)
@@ -47,7 +46,7 @@ class WifiAdapter(val mContext: Context) : RecyclerView.Adapter<WifiAdapter.Wifi
     }
 
     class WifiViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val tv_wifi_name: TextView = itemView.findViewById(com.example.wsins.wifiviewer.R.id.tv_wifi_name)
-        val tv_wifi_pwd: TextView = itemView.findViewById(com.example.wsins.wifiviewer.R.id.tv_wifi_pwd)
+        val tvWifiName: TextView = itemView.findViewById(com.example.wsins.wifiviewer.R.id.tv_wifi_name)
+        val tvWifiPwd: TextView = itemView.findViewById(com.example.wsins.wifiviewer.R.id.tv_wifi_pwd)
     }
 }
