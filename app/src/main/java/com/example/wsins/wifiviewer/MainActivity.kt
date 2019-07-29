@@ -1,6 +1,7 @@
-package com.example.wsins.wifiviewer.activity
+package com.example.wsins.wifiviewer
 
 import android.annotation.SuppressLint
+import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
@@ -18,13 +19,12 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
-import com.example.wsins.wifiviewer.R
-import com.example.wsins.wifiviewer.adapter.WifiAdapter
+import com.example.wsins.wifiviewer.adapter.WifiRVAdapter
 import com.example.wsins.wifiviewer.info.WifiInfo
-import com.example.wsins.wifiviewer.utils.ClipBoardUtils
-import com.example.wsins.wifiviewer.utils.DensityUtils
-import com.example.wsins.wifiviewer.utils.RootUtils
-import com.example.wsins.wifiviewer.utils.WifiManage
+import com.example.wsins.wifiviewer.util.ClipBoardUtils
+import com.example.wsins.wifiviewer.util.DensityUtils
+import com.example.wsins.wifiviewer.util.RootUtils
+import com.example.wsins.wifiviewer.data.WifiManager
 import kotlinx.android.synthetic.main.activity_main.*
 import java.lang.ref.WeakReference
 import kotlin.concurrent.thread
@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
 
     private var mWifiInfoList: MutableList<WifiInfo> = mutableListOf()
     private var mHandler = MyHandler(this)
-    private lateinit var mWifiAdapter: WifiAdapter
+    private lateinit var mWifiRVAdapter: WifiRVAdapter
 
     companion object {
         const val INIT_DATA = 0
@@ -67,8 +67,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initRoot() {
-        if (RootUtils().isRoot) {
-            if (!RootUtils().checkRoot()) {
+        if (RootUtils.isRoot) {
+            if (!RootUtils.checkRoot()) {
                 AlertDialog.Builder(this).run {
                     setTitle("Root权限检测")
                     setMessage("无法获取Root权限。")
@@ -102,18 +102,17 @@ class MainActivity : AppCompatActivity() {
             val msg = Message.obtain().also {
                 it.what = what
             }
-            mWifiInfoList = WifiManage().readData()!!
+            mWifiInfoList = WifiManager().readData()!!
             mHandler.sendMessage(msg)
         }
     }
 
     private fun setData() {
         nav_view.apply {
-            setCheckedItem(R.id.nav_wifi_list)
             getHeaderView(0).findViewById<TextView>(R.id.app_name).text = getString(R.string.app_name)
             getHeaderView(0).findViewById<TextView>(R.id.wifi_count).text = "共${mWifiInfoList.size}条Wifi信息"
         }
-        mWifiAdapter.setData(mWifiInfoList)
+        mWifiRVAdapter.setData(mWifiInfoList)
     }
 
     private fun initActionBar() {
@@ -131,7 +130,7 @@ class MainActivity : AppCompatActivity() {
             orientation = OrientationHelper.VERTICAL
         }
         rv_wifi_list.layoutManager = layoutManager
-        mWifiAdapter = WifiAdapter()
+        mWifiRVAdapter = WifiRVAdapter()
         rv_wifi_list.addItemDecoration(object : RecyclerView.ItemDecoration() {
 
             override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
@@ -143,14 +142,14 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
-        rv_wifi_list.adapter = mWifiAdapter
+        rv_wifi_list.adapter = mWifiRVAdapter
     }
 
     private fun initListener() {
-        mWifiAdapter.setOnRVItemClickListener(object : WifiAdapter.OnRVItemClickListener {
+        mWifiRVAdapter.setOnRVItemClickListener(object : WifiRVAdapter.OnRVItemClickListener {
             override fun onRVItemClick(position: Int) {
                 val textWifiPW = mWifiInfoList[position].password
-                ClipBoardUtils().copyClipBoard(this@MainActivity, "textWifiPW", textWifiPW)
+                ClipBoardUtils.copyClipBoard(this@MainActivity, "textWifiPW", textWifiPW)
                 Snackbar.make(rv_wifi_list, "已复制密码 ${mWifiInfoList[position].password} 到剪贴板。", Snackbar.LENGTH_SHORT)
                         .setAction("分享") {
                             textShare("分享密码", textWifiPW)
@@ -160,7 +159,7 @@ class MainActivity : AppCompatActivity() {
 
             override fun onRVItemLongClick(position: Int) {
                 val textWifiSSIDAndPW = "SSID：" + mWifiInfoList[position].ssid + "\n密码：" + mWifiInfoList[position].password
-                ClipBoardUtils().copyClipBoard(this@MainActivity, "textWifiSSIDAndPW", textWifiSSIDAndPW)
+                ClipBoardUtils.copyClipBoard(this@MainActivity, "textWifiSSIDAndPW", textWifiSSIDAndPW)
                 Snackbar.make(rv_wifi_list, "已复制 ${mWifiInfoList[position].ssid} 的SSID和密码到剪贴板。", Snackbar.LENGTH_SHORT)
                         .setAction("分享") {
                             textShare("分享SSID和密码", textWifiSSIDAndPW)
@@ -180,7 +179,15 @@ class MainActivity : AppCompatActivity() {
                     textShare("分享APP", "我正在使用@Wifi Viewer，查看并复制WIFI的SSID和密码。")
                 }
                 R.id.nav_about -> {
-                    AboutActivity.move(this)
+                    AlertDialog.Builder(this).run {
+                        setTitle("温馨提示")
+                        setMessage("本软件是一款可以查看本设置已保存WiFi密码的工具，并支持点击对密码进行复制，长按对SSID和密码进行复制。")
+                        setCancelable(false)
+                        setPositiveButton("关闭") { dialogInterface: DialogInterface, i: Int ->
+                            dialogInterface.dismiss()
+                        }
+                        show()
+                    }
                 }
             }
             drawer_layout.closeDrawers()

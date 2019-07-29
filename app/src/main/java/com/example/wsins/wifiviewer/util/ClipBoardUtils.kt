@@ -1,10 +1,10 @@
-package com.example.wsins.wifiviewer.utils
+package com.example.wsins.wifiviewer.util
 
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 
-class ClipBoardUtils {
+object ClipBoardUtils {
 
     fun copyClipBoard(context: Context, label: String, text: String) {
         (context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).run {

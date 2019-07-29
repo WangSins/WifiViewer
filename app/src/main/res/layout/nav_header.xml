@@ -20,6 +20,6 @@
         android:layout_above="@id/wifi_count"
         android:textColor="#FFFFFF"
         android:textStyle="bold"
-        android:textSize="18sp" />
+        android:textSize="26sp" />
 
 </RelativeLayout>

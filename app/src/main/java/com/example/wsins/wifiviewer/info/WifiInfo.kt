@@ -1,6 +1,6 @@
 package com.example.wsins.wifiviewer.info
 
-class WifiInfo {
-    var ssid = ""
-    var password = ""
-}
+data class WifiInfo(
+        var ssid: String = "",
+        var password: String = ""
+)

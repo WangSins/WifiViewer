@@ -1,6 +1,7 @@
-package com.example.wsins.wifiviewer.utils
+package com.example.wsins.wifiviewer.data
 
 import com.example.wsins.wifiviewer.info.WifiInfo
+import com.example.wsins.wifiviewer.util.RootUtils
 import org.w3c.dom.Element
 import org.xml.sax.SAXException
 import java.io.*
@@ -8,7 +9,7 @@ import java.util.regex.Pattern
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.parsers.ParserConfigurationException
 
-class WifiManage {
+class WifiManager {
 
     lateinit var wifiInfo: WifiInfo
     var wifiInfoList: MutableList<WifiInfo> = mutableListOf()
@@ -28,7 +29,7 @@ class WifiManage {
         }
         val wifiData = StringBuffer()
         try {
-            process = RootUtils().getSUProcess()
+            process = RootUtils.getSUProcess()
             dataOutputStream = DataOutputStream(process.outputStream).apply {
                 writeBytes("cat /data/misc/wifi/$fileName\n")
                 writeBytes("exit\n")

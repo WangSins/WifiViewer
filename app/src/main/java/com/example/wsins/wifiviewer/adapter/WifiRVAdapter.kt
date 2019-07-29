@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import com.example.wsins.wifiviewer.info.WifiInfo
 
-class WifiAdapter : RecyclerView.Adapter<WifiAdapter.WifiViewHolder>() {
+class WifiRVAdapter : RecyclerView.Adapter<WifiRVAdapter.WifiViewHolder>() {
 
     private var mWifiInfoList: MutableList<WifiInfo> = mutableListOf()
 

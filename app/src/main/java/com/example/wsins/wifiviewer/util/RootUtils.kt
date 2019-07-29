@@ -1,4 +1,4 @@
-package com.example.wsins.wifiviewer.utils
+package com.example.wsins.wifiviewer.util
 
 import java.io.DataOutputStream
 import java.io.File
@@ -7,7 +7,7 @@ import java.io.IOException
 /**
  * Created by Sin on 2019/4/13
  */
-class RootUtils {
+object RootUtils {
 
     val isRoot: Boolean
         get() {

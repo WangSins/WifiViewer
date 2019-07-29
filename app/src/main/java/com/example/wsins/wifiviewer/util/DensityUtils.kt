@@ -1,4 +1,4 @@
-package com.example.wsins.wifiviewer.utils
+package com.example.wsins.wifiviewer.util
 
 import android.content.Context
 
