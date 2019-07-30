@@ -23,7 +23,7 @@
 
     <string name="about">關于</string>
     <string name="warm_prompt">溫馨提示</string>
-    <string name="about_prompt_information">本軟件是一款可以查看本設置已保存WiFi密碼的工具，並支持點擊對密碼進行複制，長按對SSID和密碼進行複制。</string>
+    <string name="about_prompt_information">本APP是一款可以查看當前設備已保存WiFi密碼的工具，並支持點擊對密碼進行複制，長按對SSID和密碼進行複制。</string>
     <string name="close">關閉</string>
 
     <string name="open_wifi_setting">打開WiFi設置</string>

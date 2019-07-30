@@ -182,7 +182,6 @@ class MainActivity : AppCompatActivity() {
                     AlertDialog.Builder(this).run {
                         setTitle(getString(R.string.warm_prompt))
                         setMessage(getString(R.string.about_prompt_information))
-                        setCancelable(false)
                         setPositiveButton(getString(R.string.close)) { dialogInterface: DialogInterface, i: Int ->
                             dialogInterface.dismiss()
                         }
