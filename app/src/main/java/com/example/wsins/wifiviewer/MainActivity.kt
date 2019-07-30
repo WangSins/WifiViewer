@@ -20,11 +20,11 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
 import com.example.wsins.wifiviewer.adapter.WifiRVAdapter
+import com.example.wsins.wifiviewer.data.WifiManager
 import com.example.wsins.wifiviewer.info.WifiInfo
 import com.example.wsins.wifiviewer.util.ClipBoardUtils
 import com.example.wsins.wifiviewer.util.DensityUtils
 import com.example.wsins.wifiviewer.util.RootUtils
-import com.example.wsins.wifiviewer.data.WifiManager
 import kotlinx.android.synthetic.main.activity_main.*
 import java.lang.ref.WeakReference
 import kotlin.concurrent.thread
@@ -51,7 +51,7 @@ class MainActivity : AppCompatActivity() {
                             setData()
                             srl_wifi_list.also {
                                 it.isRefreshing = false
-                                Snackbar.make(it, "刷新完成。", Snackbar.LENGTH_SHORT).show()
+                                Snackbar.make(it, getString(R.string.refresh_complete), Snackbar.LENGTH_SHORT).show()
                             }
                         }
                     }
@@ -70,10 +70,10 @@ class MainActivity : AppCompatActivity() {
         if (RootUtils.isRoot) {
             if (!RootUtils.checkRoot()) {
                 AlertDialog.Builder(this).run {
-                    setTitle("Root权限检测")
-                    setMessage("无法获取Root权限。")
+                    setTitle(getString(R.string.root_privilege_check))
+                    setMessage(getString(R.string.unable_to_obtain_root_privileges))
                     setCancelable(false)
-                    setPositiveButton("退出") { _, _ ->
+                    setPositiveButton(getString(R.string.sign_out)) { _, _ ->
                         this@MainActivity.finish()
                     }
                     show()
@@ -86,10 +86,10 @@ class MainActivity : AppCompatActivity() {
             }
         } else {
             AlertDialog.Builder(this).run {
-                setTitle("Root权限检测")
-                setMessage("本设备未Root。")
+                setTitle(getString(R.string.root_privilege_check))
+                setMessage(getString(R.string.this_equipment_is_not_authorized))
                 setCancelable(false)
-                setPositiveButton("退出") { _, _ ->
+                setPositiveButton(getString(R.string.sign_out)) { _, _ ->
                     this@MainActivity.finish()
                 }
                 show()
@@ -110,7 +110,7 @@ class MainActivity : AppCompatActivity() {
     private fun setData() {
         nav_view.apply {
             getHeaderView(0).findViewById<TextView>(R.id.app_name).text = getString(R.string.app_name)
-            getHeaderView(0).findViewById<TextView>(R.id.wifi_count).text = "共${mWifiInfoList.size}条Wifi信息"
+            getHeaderView(0).findViewById<TextView>(R.id.wifi_count).text = String.format(resources.getString(R.string.a_total_of_n_wifi_messages), mWifiInfoList.size)
         }
         mWifiRVAdapter.setData(mWifiInfoList)
     }
@@ -150,19 +150,19 @@ class MainActivity : AppCompatActivity() {
             override fun onRVItemClick(position: Int) {
                 val textWifiPW = mWifiInfoList[position].password
                 ClipBoardUtils.copyClipBoard(this@MainActivity, "textWifiPW", textWifiPW)
-                Snackbar.make(rv_wifi_list, "已复制密码 ${mWifiInfoList[position].password} 到剪贴板。", Snackbar.LENGTH_SHORT)
-                        .setAction("分享") {
-                            textShare("分享密码", textWifiPW)
+                Snackbar.make(rv_wifi_list, String.format(resources.getString(R.string.copied_pw_to_clipboard), textWifiPW), Snackbar.LENGTH_SHORT)
+                        .setAction(getString(R.string.share)) {
+                            textShare(getString(R.string.share_pw), textWifiPW)
                         }
                         .show()
             }
 
             override fun onRVItemLongClick(position: Int) {
-                val textWifiSSIDAndPW = "SSID：" + mWifiInfoList[position].ssid + "\n密码：" + mWifiInfoList[position].password
+                val textWifiSSIDAndPW = String.format(resources.getString(R.string.ssid_pw), mWifiInfoList[position].ssid,mWifiInfoList[position].password)
                 ClipBoardUtils.copyClipBoard(this@MainActivity, "textWifiSSIDAndPW", textWifiSSIDAndPW)
-                Snackbar.make(rv_wifi_list, "已复制 ${mWifiInfoList[position].ssid} 的SSID和密码到剪贴板。", Snackbar.LENGTH_SHORT)
-                        .setAction("分享") {
-                            textShare("分享SSID和密码", textWifiSSIDAndPW)
+                Snackbar.make(rv_wifi_list, String.format(resources.getString(R.string.copied_ssid_pw_to_clipboard), mWifiInfoList[position].ssid), Snackbar.LENGTH_SHORT)
+                        .setAction(getString(R.string.share)) {
+                            textShare(getString(R.string.share_ssid_pw), textWifiSSIDAndPW)
                         }
                         .show()
             }
@@ -176,14 +176,14 @@ class MainActivity : AppCompatActivity() {
         nav_view.setNavigationItemSelectedListener {
             when (it.itemId) {
                 R.id.nav_share -> {
-                    textShare("分享APP", "我正在使用@Wifi Viewer，查看并复制WIFI的SSID和密码。")
+                    textShare(getString(R.string.share_app), getString(R.string.share_app_information))
                 }
                 R.id.nav_about -> {
                     AlertDialog.Builder(this).run {
-                        setTitle("温馨提示")
-                        setMessage("本软件是一款可以查看本设置已保存WiFi密码的工具，并支持点击对密码进行复制，长按对SSID和密码进行复制。")
+                        setTitle(getString(R.string.warm_prompt))
+                        setMessage(getString(R.string.about_prompt_information))
                         setCancelable(false)
-                        setPositiveButton("关闭") { dialogInterface: DialogInterface, i: Int ->
+                        setPositiveButton(getString(R.string.close)) { dialogInterface: DialogInterface, i: Int ->
                             dialogInterface.dismiss()
                         }
                         show()
@@ -230,7 +230,7 @@ class MainActivity : AppCompatActivity() {
         } else {
             if (keyCode == KeyEvent.KEYCODE_BACK) {
                 if ((System.currentTimeMillis() - mExitTime) > 2000) {
-                    Snackbar.make(rv_wifi_list, "再按一次退出程序。", Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(rv_wifi_list, getString(R.string.press_exit_again), Snackbar.LENGTH_SHORT).show()
                     mExitTime = System.currentTimeMillis()
                 } else {
                     finish()

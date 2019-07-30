@@ -1,3 +1,31 @@
 <resources>
     <string name="app_name">Wifi Viewer</string>
+    <string name="refresh_complete">刷新完成</string>
+
+    <string name="root_privilege_check">Root权限检测</string>
+    <string name="unable_to_obtain_root_privileges">无法获取Root权限。</string>
+    <string name="this_equipment_is_not_authorized">本设备未Root。</string>
+    <string name="sign_out">退出</string>
+    <string name="a_total_of_n_wifi_messages">共%d条Wifi信息</string>
+
+    <string name="share">分享</string>
+    <string name="share_pw">分享密码</string>
+    <string name="share_ssid_pw">分享SSID和密码</string>
+
+
+    <string name="copied_pw_to_clipboard">已复制密码 %s 到剪贴板。</string>
+    <string name="ssid_pw">SSID：%s\n密码：%s</string>
+    <string name="copied_ssid_pw_to_clipboard">已复制 %s 的SSID和密码到剪贴板。</string>
+
+
+    <string name="share_app">分享APP</string>
+    <string name="share_app_information">我正在使用@Wifi Viewer，查看并复制WIFI的SSID和密码。</string>
+
+    <string name="about">关于</string>
+    <string name="warm_prompt">温馨提示</string>
+    <string name="about_prompt_information">本软件是一款可以查看本设置已保存WiFi密码的工具，并支持点击对密码进行复制，长按对SSID和密码进行复制。</string>
+    <string name="close">关闭</string>
+
+    <string name="open_wifi_setting">打开WiFi设置</string>
+    <string name="press_exit_again">再按一次退出程序。</string>
 </resources>
