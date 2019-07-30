@@ -179,7 +179,7 @@ class MainActivity : AppCompatActivity() {
                     textShare(getString(R.string.share_app), getString(R.string.share_app_information))
                 }
                 R.id.nav_about -> {
-                    AlertDialog.Builder(this).run {
+                    val alertDialog = AlertDialog.Builder(this).run {
                         setTitle(getString(R.string.warm_prompt))
                         setMessage(getString(R.string.about_prompt_information))
                         setPositiveButton(getString(R.string.close)) { dialogInterface: DialogInterface, i: Int ->
@@ -187,6 +187,7 @@ class MainActivity : AppCompatActivity() {
                         }
                         show()
                     }
+                    alertDialog.setCanceledOnTouchOutside(false)
                 }
             }
             drawer_layout.closeDrawers()
