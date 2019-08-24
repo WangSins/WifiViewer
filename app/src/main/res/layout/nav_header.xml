@@ -10,7 +10,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:textColor="#FFFFFF"
+        android:textColor="@android:color/white"
         android:textSize="14sp" />
 
     <TextView
@@ -18,8 +18,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@id/wifi_count"
-        android:textColor="#FFFFFF"
-        android:textStyle="bold"
-        android:textSize="26sp" />
+        android:textColor="@android:color/white"
+        android:textSize="26sp"
+        android:textStyle="bold" />
 
 </RelativeLayout>
