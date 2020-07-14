@@ -1,16 +1,12 @@
 package com.example.wsins.wifiviewer
 
-import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Rect
-import android.os.Bundle
 import android.os.Handler
 import android.os.Message
-import android.support.design.widget.Snackbar
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.OrientationHelper
 import android.support.v7.widget.RecyclerView
@@ -18,22 +14,22 @@ import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.TextView
-import com.example.wsins.wifiviewer.adapter.WifiRVAdapter
-import com.example.wsins.wifiviewer.data.WifiManager
-import com.example.wsins.wifiviewer.info.WifiInfo
-import com.example.wsins.wifiviewer.util.ClipBoardUtils
-import com.example.wsins.wifiviewer.util.DensityUtils
-import com.example.wsins.wifiviewer.util.RootUtils
+import com.example.wsins.wifiviewer.adapter.WifiAdapter
+import com.example.wsins.wifiviewer.base.BaseActivity
+import com.example.wsins.wifiviewer.bean.WifiBean
+import com.example.wsins.wifiviewer.util.ShareUtils
+import com.example.wsins.wifiviewer.util.WifiManager
+import com.example.wsins.wifiviewer.util.dp
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.nav_header.view.*
 import java.lang.ref.WeakReference
 import kotlin.concurrent.thread
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity() {
 
-    private var mWifiInfoList: MutableList<WifiInfo> = mutableListOf()
+    private var mWifiLists: MutableList<WifiBean> = mutableListOf()
     private var mHandler = MyHandler(this)
-    private lateinit var mWifiRVAdapter: WifiRVAdapter
+    private lateinit var mWifiAdapter: WifiAdapter
 
     companion object {
         const val INIT_DATA = 0
@@ -51,7 +47,7 @@ class MainActivity : AppCompatActivity() {
                             setData()
                             srl_wifi_list.also {
                                 it.isRefreshing = false
-                                Snackbar.make(it, getString(R.string.refresh_complete), Snackbar.LENGTH_SHORT).show()
+                                snackBar(it, getString(R.string.refresh_complete))
                             }
                         }
                     }
@@ -60,63 +56,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    @SuppressLint("ResourceType")
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        initRoot()
-    }
+    override fun getLayoutResID(): Int = R.layout.activity_main
 
-    private fun initRoot() {
-        if (RootUtils.isRoot) {
-            if (!RootUtils.checkRoot()) {
-                AlertDialog.Builder(this).run {
-                    setTitle(getString(R.string.root_privilege_check))
-                    setMessage(getString(R.string.unable_to_obtain_root_privileges))
-                    setCancelable(false)
-                    setPositiveButton(getString(R.string.sign_out)) { _, _ ->
-                        this@MainActivity.finish()
-                    }
-                    show()
-                }
-            } else {
-                initActionBar()
-                initView()
-                getData()
-                initListener()
-            }
-        } else {
-            AlertDialog.Builder(this).run {
-                setTitle(getString(R.string.root_privilege_check))
-                setMessage(getString(R.string.this_equipment_is_not_authorized))
-                setCancelable(false)
-                setPositiveButton(getString(R.string.sign_out)) { _, _ ->
-                    this@MainActivity.finish()
-                }
-                show()
-            }
-        }
-    }
-
-    private fun getData(what: Int = INIT_DATA) {
-        thread(true) {
-            val msg = Message.obtain().also {
-                it.what = what
-            }
-            mWifiInfoList = WifiManager().readData()!!
-            mHandler.sendMessage(msg)
-        }
-    }
-
-    private fun setData() {
-        nav_view.apply {
-            getHeaderView(0).findViewById<TextView>(R.id.app_name).text = getString(R.string.app_name)
-            getHeaderView(0).findViewById<TextView>(R.id.wifi_count).text = String.format(resources.getString(R.string.a_total_of_n_wifi_messages), mWifiInfoList.size)
-        }
-        mWifiRVAdapter.setData(mWifiInfoList)
-    }
-
-    private fun initActionBar() {
-        setContentView(R.layout.activity_main)
+    override fun initActionBar() {
         setSupportActionBar(toolbar)
         supportActionBar?.apply {
             setDisplayHomeAsUpEnabled(true)
@@ -125,46 +67,53 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun initView() {
-        val layoutManager = LinearLayoutManager(this).apply {
+    override fun initView() {
+        val linearLayoutManager = LinearLayoutManager(this).apply {
             orientation = OrientationHelper.VERTICAL
         }
-        rv_wifi_list.layoutManager = layoutManager
-        mWifiRVAdapter = WifiRVAdapter()
-        rv_wifi_list.addItemDecoration(object : RecyclerView.ItemDecoration() {
+        mWifiAdapter = WifiAdapter()
+        rv_wifi_list.run {
+            layoutManager = linearLayoutManager
+            adapter = mWifiAdapter
+            addItemDecoration(object : RecyclerView.ItemDecoration() {
 
-            override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
-                super.getItemOffsets(outRect, view, parent, state)
-                outRect.run {
-                    left = DensityUtils.dip2px(this@MainActivity, 8f)
-                    right = DensityUtils.dip2px(this@MainActivity, 8f)
-                    top = DensityUtils.dip2px(this@MainActivity, 8f)
+                override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
+                    super.getItemOffsets(outRect, view, parent, state)
+                    outRect.run {
+                        left = 8.dp
+                        right = 8.dp
+                        top = 8.dp
+                    }
                 }
-            }
-        })
-        rv_wifi_list.adapter = mWifiRVAdapter
+            })
+        }
     }
 
-    private fun initListener() {
-        mWifiRVAdapter.setOnRVItemClickListener(object : WifiRVAdapter.OnRVItemClickListener {
-            override fun onRVItemClick(position: Int) {
-                val textWifiPW = mWifiInfoList[position].password
-                ClipBoardUtils.copyClipBoard(this@MainActivity, "textWifiPW", textWifiPW)
-                Snackbar.make(rv_wifi_list, String.format(resources.getString(R.string.copied_pw_to_clipboard), textWifiPW), Snackbar.LENGTH_SHORT)
-                        .setAction(getString(R.string.share)) {
-                            textShare(getString(R.string.share_pw), textWifiPW)
-                        }
-                        .show()
+    override fun initData() {
+        getData()
+    }
+
+    override fun initEvent() {
+        mWifiAdapter.setOnItemClickListener(object : WifiAdapter.OnItemClickListener {
+            override fun onItemClick(position: Int) {
+                mWifiLists[position].password.run {
+                    ShareUtils.copyTips(rv_wifi_list,
+                            String.format(resources.getString(R.string.copied_pw_to_clipboard),
+                                    this),
+                            getString(R.string.share_pw),
+                            this)
+                }
             }
 
-            override fun onRVItemLongClick(position: Int) {
-                val textWifiSSIDAndPW = String.format(resources.getString(R.string.ssid_pw), mWifiInfoList[position].ssid,mWifiInfoList[position].password)
-                ClipBoardUtils.copyClipBoard(this@MainActivity, "textWifiSSIDAndPW", textWifiSSIDAndPW)
-                Snackbar.make(rv_wifi_list, String.format(resources.getString(R.string.copied_ssid_pw_to_clipboard), mWifiInfoList[position].ssid), Snackbar.LENGTH_SHORT)
-                        .setAction(getString(R.string.share)) {
-                            textShare(getString(R.string.share_ssid_pw), textWifiSSIDAndPW)
-                        }
-                        .show()
+            override fun onItemLongClick(position: Int) {
+                String.format(resources.getString(R.string.ssid_pw), mWifiLists[position].ssid, mWifiLists[position].password).run {
+                    ShareUtils.copyTips(rv_wifi_list,
+                            String.format(resources.getString(R.string.copied_ssid_pw_to_clipboard),
+                                    mWifiLists[position].ssid),
+                            getString(R.string.share_ssid_pw),
+                            this)
+                }
+
             }
 
         })
@@ -176,18 +125,21 @@ class MainActivity : AppCompatActivity() {
         nav_view.setNavigationItemSelectedListener {
             when (it.itemId) {
                 R.id.nav_share -> {
-                    textShare(getString(R.string.share_app), getString(R.string.share_app_information))
+                    ShareUtils.goShare(this@MainActivity,
+                            getString(R.string.share_app), getString(R.string.share_app_information))
                 }
                 R.id.nav_about -> {
-                    val alertDialog = AlertDialog.Builder(this).run {
-                        setTitle(getString(R.string.warm_prompt))
-                        setMessage(getString(R.string.about_prompt_information))
-                        setPositiveButton(getString(R.string.close)) { dialogInterface: DialogInterface, i: Int ->
+                    with(AlertDialog.Builder(this@MainActivity)) {
+                        setTitle(context.getString(R.string.warm_prompt))
+                        setMessage(context.getString(R.string.about_prompt_information))
+
+                        setPositiveButton(context.getString(R.string.close)) { dialogInterface: DialogInterface, _: Int ->
                             dialogInterface.dismiss()
                         }
                         show()
+                    }.run {
+                        setCanceledOnTouchOutside(false)
                     }
-                    alertDialog.setCanceledOnTouchOutside(false)
                 }
             }
             drawer_layout.closeDrawers()
@@ -195,17 +147,30 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun textShare(title: String, text: String) {
-        val intent = Intent(Intent.ACTION_SEND)
-        intent.type = "text/plain"
-        intent.putExtra(Intent.EXTRA_TEXT, text)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        startActivity(Intent.createChooser(intent, title))
+    override fun release() {
+        mHandler.removeCallbacksAndMessages(null)
+    }
+
+    private fun getData(what: Int = INIT_DATA) {
+        thread(true) {
+            Message.obtain().also {
+                it.what = what
+                mWifiLists = WifiManager().readData()!!
+                mHandler.sendMessage(it)
+            }
+        }
+    }
+
+    private fun setData() {
+        nav_view.run {
+            getHeaderView(0).app_name.text = getString(R.string.app_name)
+            getHeaderView(0).wifi_count.text = String.format(resources.getString(R.string.a_total_of_n_wifi_messages), mWifiLists.size)
+        }
+        mWifiAdapter.setData(mWifiLists)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        val inflater = menuInflater
-        inflater.inflate(R.menu.menu_main, menu)
+        menuInflater.inflate(R.menu.menu_main, menu)
         return true
     }
 
@@ -213,10 +178,11 @@ class MainActivity : AppCompatActivity() {
         when (item?.itemId) {
             android.R.id.home -> drawer_layout.openDrawer(GravityCompat.START)
             R.id.item_setting -> {
-                val intent = Intent().apply {
+                Intent().apply {
                     action = "android.net.wifi.PICK_WIFI_NETWORK"
+                }.let {
+                    startActivity(it)
                 }
-                startActivity(intent)
             }
         }
         return super.onOptionsItemSelected(item)
@@ -230,7 +196,7 @@ class MainActivity : AppCompatActivity() {
         } else {
             if (keyCode == KeyEvent.KEYCODE_BACK) {
                 if ((System.currentTimeMillis() - mExitTime) > 2000) {
-                    Snackbar.make(rv_wifi_list, getString(R.string.press_exit_again), Snackbar.LENGTH_SHORT).show()
+                    snackBar(rv_wifi_list, getString(R.string.press_exit_again))
                     mExitTime = System.currentTimeMillis()
                 } else {
                     finish()
@@ -240,10 +206,4 @@ class MainActivity : AppCompatActivity() {
         }
         return super.onKeyDown(keyCode, event)
     }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        mHandler.removeCallbacksAndMessages(null)
-    }
-
 }

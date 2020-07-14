@@ -1,5 +1,9 @@
 package com.example.wsins.wifiviewer.util
 
+import android.content.Context
+import android.support.v7.app.AlertDialog
+import com.example.wsins.wifiviewer.R
+import com.example.wsins.wifiviewer.listener.OnNextListener
 import java.io.DataOutputStream
 import java.io.File
 import java.io.IOException
@@ -12,22 +16,30 @@ object RootUtils {
     val isRoot: Boolean
         get() {
             var bool = false
-
             try {
                 bool = !(!File("/system/bin/su").exists() && !File("/system/xbin/su").exists())
             } catch (e: Exception) {
-
             }
             return bool
         }
 
-    private fun rumCmd(): Boolean {
+    val isGrant: Boolean
+        get() {
+            var bool = false
+            try {
+                bool = checkGrant()
+            } catch (e: Exception) {
+            }
+            return bool
+        }
+
+    private fun checkGrant(): Boolean {
         var process: Process? = null
         var os: DataOutputStream? = null
         val rt: Int
         try {
             process = getSUProcess()
-            os = DataOutputStream(process?.outputStream)
+            os = DataOutputStream(process.outputStream)
             os.writeBytes("system/bin/mount -o rw,remount -t rootfs /data" + "\n")
             os.writeBytes("exit\n")
             os.flush()
@@ -48,17 +60,33 @@ object RootUtils {
         return rt == 0
     }
 
-    fun checkRoot(): Boolean {
-        return try {
-            try {
-                rumCmd()
-            } catch (e: Exception) {
-                false
+    fun getSUProcess(): Process = Runtime.getRuntime().exec("su")
+
+    fun checkRootAccess(context: Context, listener: OnNextListener) {
+        if (isRoot) {
+            if (!isGrant) {
+                AlertDialog.Builder(context).run {
+                    setTitle(context.getString(R.string.root_privilege_check))
+                    setMessage(context.getString(R.string.unable_to_obtain_root_privileges))
+                    setCancelable(false)
+                    setPositiveButton(context.getString(R.string.sign_out)) { _, _ ->
+                        ActivityManager.exitApp(context)
+                    }
+                    show()
+                }
+            } else {
+                listener.onNext()
             }
-        } catch (e: Exception) {
-            false
+        } else {
+            AlertDialog.Builder(context).run {
+                setTitle(context.getString(R.string.root_privilege_check))
+                setMessage(context.getString(R.string.this_equipment_is_not_authorized))
+                setCancelable(false)
+                setPositiveButton(context.getString(R.string.sign_out)) { _, _ ->
+                    ActivityManager.exitApp(context)
+                }
+                show()
+            }
         }
     }
-
-    fun getSUProcess(): Process = Runtime.getRuntime().exec("su")
 }
