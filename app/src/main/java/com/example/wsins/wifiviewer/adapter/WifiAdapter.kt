@@ -13,7 +13,8 @@ class WifiAdapter : RecyclerView.Adapter<WifiAdapter.WifiViewHolder>() {
     private var mWifiLists: MutableList<WifiBean> = mutableListOf()
 
     fun setData(wifiLists: MutableList<WifiBean>) {
-        mWifiLists = wifiLists
+        mWifiLists.clear()
+        mWifiLists.addAll(wifiLists)
         notifyDataSetChanged()
     }
 

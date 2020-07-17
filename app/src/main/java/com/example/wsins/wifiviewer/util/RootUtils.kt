@@ -64,19 +64,7 @@ object RootUtils {
 
     fun checkRootAccess(context: Context, listener: OnNextListener) {
         if (isRoot) {
-            if (!isGrant) {
-                AlertDialog.Builder(context).run {
-                    setTitle(context.getString(R.string.root_privilege_check))
-                    setMessage(context.getString(R.string.unable_to_obtain_root_privileges))
-                    setCancelable(false)
-                    setPositiveButton(context.getString(R.string.sign_out)) { _, _ ->
-                        ActivityManager.exitApp(context)
-                    }
-                    show()
-                }
-            } else {
-                listener.onNext()
-            }
+            listener.onNext()
         } else {
             AlertDialog.Builder(context).run {
                 setTitle(context.getString(R.string.root_privilege_check))

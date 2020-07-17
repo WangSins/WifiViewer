@@ -1,5 +1,7 @@
 package com.example.wsins.wifiviewer.util
 
+import android.os.Handler
+import android.os.Looper
 import com.example.wsins.wifiviewer.bean.WifiBean
 import org.w3c.dom.Element
 import org.xml.sax.SAXException
@@ -7,62 +9,82 @@ import java.io.*
 import java.util.regex.Pattern
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.parsers.ParserConfigurationException
+import kotlin.concurrent.thread
 
-class WifiManager {
+object WifiManager {
 
-    lateinit var wifiBean: WifiBean
-    var wifiLists: MutableList<WifiBean> = mutableListOf()
-
-    fun readData(): MutableList<WifiBean>? {
-        var process: Process? = null
-        var dataOutputStream: DataOutputStream? = null
-        var dataInputStream: DataInputStream? = null
-        val isO: Boolean
-        val fileName: String
-        if (android.os.Build.VERSION.SDK_INT >= 26) {
-            fileName = "*.xml"
-            isO = true
-        } else {
-            fileName = "*.conf"
-            isO = false
+    private val isO: Boolean
+        get() {
+            return android.os.Build.VERSION.SDK_INT >= 26
         }
-        val wifiData = StringBuffer()
-        try {
-            process = RootUtils.getSUProcess()
-            dataOutputStream = DataOutputStream(process.outputStream).apply {
-                writeBytes("cat /data/misc/wifi/$fileName\n")
-                writeBytes("exit\n")
-                flush()
+
+    private val mHandler: Handler by lazy {
+        Handler(Looper.getMainLooper())
+    }
+
+    interface ReadCallback<T> {
+        fun onSuccess(response: MutableList<T>)
+        fun onError(errorCode: Int)
+    }
+
+    fun readData(callback: ReadCallback<WifiBean>) {
+        thread {
+            var process: Process? = null
+            var dataOutputStream: DataOutputStream? = null
+            var dataInputStream: DataInputStream? = null
+            val fileName: String = if (isO) {
+                "*.xml"
+            } else {
+                "*.conf"
             }
-            dataInputStream = DataInputStream(process.inputStream)
-            val inputStreamReader = InputStreamReader(dataInputStream, "UTF-8")
-            val bufferedReader = BufferedReader(inputStreamReader)
-            var line: String? = null
-            while ({ line = bufferedReader.readLine();line }() != null) {
-                wifiData.append(line)
-            }
-            bufferedReader.close()
-            inputStreamReader.close()
-            process.waitFor()
-        } catch (e: Exception) {
-            throw e
-        } finally {
+            val wifiData = StringBuffer()
             try {
-                dataOutputStream?.close()
-                dataInputStream?.close()
-                process?.destroy()
+                process = RootUtils.getSUProcess()
+                dataOutputStream = DataOutputStream(process.outputStream).apply {
+                    writeBytes("cat /data/misc/wifi/$fileName\n")
+                    writeBytes("exit\n")
+                    flush()
+                }
+                dataInputStream = DataInputStream(process.inputStream)
+                val inputStreamReader = InputStreamReader(dataInputStream, "UTF-8")
+                val bufferedReader = BufferedReader(inputStreamReader)
+                var line: String? = null
+                while ({ line = bufferedReader.readLine();line }() != null) {
+                    wifiData.append(line)
+                }
+                bufferedReader.close()
+                inputStreamReader.close()
+                val rt = process.waitFor()
+                if (rt == 0) {
+                    val wifiLists = if (isO) {
+                        parseXml(wifiData.toString())
+                    } else {
+                        parseConf(wifiData.toString())
+                    }
+                    mHandler.post {
+                        callback.onSuccess(wifiLists)
+                    }
+                } else {
+                    mHandler.post {
+                        callback.onError(rt)
+                    }
+                }
             } catch (e: Exception) {
                 throw e
+            } finally {
+                try {
+                    dataOutputStream?.close()
+                    dataInputStream?.close()
+                    process?.destroy()
+                } catch (e: Exception) {
+                    throw e
+                }
             }
-        }
-        return if (isO) {
-            parseXml(wifiData)
-        } else {
-            parseConf(wifiData)
         }
     }
 
-    private fun parseConf(wifiData: StringBuffer): MutableList<WifiBean>? {
+    private fun parseConf(wifiData: String): MutableList<WifiBean> {
+        val wifiLists: MutableList<WifiBean> = mutableListOf()
         val network = Pattern.compile("network=\\{([^\\}]+)\\}", Pattern.DOTALL)
         val networkMatcher = network.matcher(wifiData.toString())
         while (networkMatcher.find()) {
@@ -70,7 +92,7 @@ class WifiManager {
             val ssid = Pattern.compile("ssid=\"([^\"]+)\"")
             val ssidMatcher = ssid.matcher(networkBlock)
             if (ssidMatcher.find()) {
-                wifiBean = WifiBean()
+                val wifiBean = WifiBean()
                 wifiBean.ssid = ssidMatcher.group(1)
                 val psk = Pattern.compile("psk=\"([^\"]+)\"")
                 val pskMatcher = psk.matcher(networkBlock)
@@ -83,11 +105,12 @@ class WifiManager {
         return wifiLists
     }
 
-    private fun parseXml(wifiData: StringBuffer): MutableList<WifiBean>? {
+    private fun parseXml(wifiData: String): MutableList<WifiBean> {
+        val wifiLists: MutableList<WifiBean> = mutableListOf()
         var byteArrayInputStream: ByteArrayInputStream? = null
         val factory = DocumentBuilderFactory.newInstance()
         try {
-            byteArrayInputStream = ByteArrayInputStream(wifiData.toString().toByteArray(charset("UTF-8")))
+            byteArrayInputStream = ByteArrayInputStream(wifiData.toByteArray(charset("UTF-8")))
         } catch (e: UnsupportedEncodingException) {
             e.printStackTrace()
         }
@@ -109,7 +132,7 @@ class WifiManager {
                     if (wpNodeList.length < 2) {
                         continue
                     }
-                    wifiBean = WifiBean()
+                    val wifiBean = WifiBean()
                     for (j in 0 until wpNodeList.length) {
                         val e = wpNodeList.item(j) as Element
                         val name = e.getAttribute("name")

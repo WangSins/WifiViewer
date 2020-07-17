@@ -3,12 +3,9 @@ package com.example.wsins.wifiviewer
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Rect
-import android.os.Handler
-import android.os.Message
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.OrientationHelper
 import android.support.v7.widget.RecyclerView
 import android.view.KeyEvent
 import android.view.Menu
@@ -17,44 +14,17 @@ import android.view.View
 import com.example.wsins.wifiviewer.adapter.WifiAdapter
 import com.example.wsins.wifiviewer.base.BaseActivity
 import com.example.wsins.wifiviewer.bean.WifiBean
+import com.example.wsins.wifiviewer.util.ActivityManager
 import com.example.wsins.wifiviewer.util.ShareUtils
 import com.example.wsins.wifiviewer.util.WifiManager
 import com.example.wsins.wifiviewer.util.dp
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.nav_header.view.*
-import java.lang.ref.WeakReference
-import kotlin.concurrent.thread
 
 class MainActivity : BaseActivity() {
 
     private var mWifiLists: MutableList<WifiBean> = mutableListOf()
-    private var mHandler = MyHandler(this)
     private lateinit var mWifiAdapter: WifiAdapter
-
-    companion object {
-        const val INIT_DATA = 0
-        const val REFRESH_DATA = 1
-
-        private class MyHandler(activity: MainActivity) : Handler() {
-            private val mActivity: WeakReference<MainActivity> = WeakReference(activity)
-            override fun handleMessage(msg: Message?) {
-                super.handleMessage(msg)
-                val activity = mActivity.get()
-                when (msg?.what) {
-                    INIT_DATA -> activity?.setData()
-                    REFRESH_DATA -> {
-                        activity?.run {
-                            setData()
-                            srl_wifi_list.also {
-                                it.isRefreshing = false
-                                snackBar(it, getString(R.string.refresh_complete))
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
 
     override fun getLayoutResID(): Int = R.layout.activity_main
 
@@ -68,12 +38,9 @@ class MainActivity : BaseActivity() {
     }
 
     override fun initView() {
-        val linearLayoutManager = LinearLayoutManager(this).apply {
-            orientation = OrientationHelper.VERTICAL
-        }
         mWifiAdapter = WifiAdapter()
         rv_wifi_list.run {
-            layoutManager = linearLayoutManager
+            layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = mWifiAdapter
             addItemDecoration(object : RecyclerView.ItemDecoration() {
 
@@ -89,14 +56,51 @@ class MainActivity : BaseActivity() {
         }
     }
 
-    override fun initData() {
-        getData()
+    override fun loadData(style: Int) {
+        WifiManager.readData(object : WifiManager.ReadCallback<WifiBean> {
+
+            override fun onSuccess(response: MutableList<WifiBean>) {
+                mWifiLists.clear()
+                mWifiLists.addAll(response)
+                nav_view.run {
+                    getHeaderView(0).app_name.text = getString(R.string.app_name)
+                    getHeaderView(0).wifi_count.text = String.format(resources.getString(R.string.a_total_of_n_wifi_messages), mWifiLists.size)
+                }
+                mWifiAdapter.setData(mWifiLists)
+                srl_wifi_list.also {
+                    it.isRefreshing = false
+                    if (style == DATA_REFRESH) {
+                        if (mWifiLists.size > 0) {
+                            snackBar(it, getString(R.string.refresh_complete))
+                        } else {
+                            snackBar(it, getString(R.string.refresh_error))
+                        }
+                    }
+                }
+            }
+
+            override fun onError(errorCode: Int) {
+                srl_wifi_list.also {
+                    it.isRefreshing = false
+                }
+                AlertDialog.Builder(this@MainActivity).run {
+                    setTitle(context.getString(R.string.root_privilege_check))
+                    setMessage(context.getString(R.string.unable_to_obtain_root_privileges))
+                    setCancelable(false)
+                    setPositiveButton(context.getString(R.string.sign_out)) { _, _ ->
+                        ActivityManager.exitApp(context)
+                    }
+                    show()
+                }
+            }
+        })
+
     }
 
     override fun initEvent() {
         mWifiAdapter.setOnItemClickListener(object : WifiAdapter.OnItemClickListener {
             override fun onItemClick(position: Int) {
-                mWifiLists[position].password.run {
+                with(mWifiLists[position].password) {
                     ShareUtils.copyTips(rv_wifi_list,
                             String.format(resources.getString(R.string.copied_pw_to_clipboard),
                                     this),
@@ -106,7 +110,7 @@ class MainActivity : BaseActivity() {
             }
 
             override fun onItemLongClick(position: Int) {
-                String.format(resources.getString(R.string.ssid_pw), mWifiLists[position].ssid, mWifiLists[position].password).run {
+                with(String.format(resources.getString(R.string.ssid_pw), mWifiLists[position].ssid, mWifiLists[position].password)) {
                     ShareUtils.copyTips(rv_wifi_list,
                             String.format(resources.getString(R.string.copied_ssid_pw_to_clipboard),
                                     mWifiLists[position].ssid),
@@ -118,8 +122,8 @@ class MainActivity : BaseActivity() {
 
         })
         srl_wifi_list.setOnRefreshListener {
-            Handler().postDelayed({
-                getData(REFRESH_DATA)
+            mHandler.postDelayed({
+                loadData(DATA_REFRESH)
             }, 500)
         }
         nav_view.setNavigationItemSelectedListener {
@@ -147,28 +151,6 @@ class MainActivity : BaseActivity() {
         }
     }
 
-    override fun release() {
-        mHandler.removeCallbacksAndMessages(null)
-    }
-
-    private fun getData(what: Int = INIT_DATA) {
-        thread(true) {
-            Message.obtain().also {
-                it.what = what
-                mWifiLists = WifiManager().readData()!!
-                mHandler.sendMessage(it)
-            }
-        }
-    }
-
-    private fun setData() {
-        nav_view.run {
-            getHeaderView(0).app_name.text = getString(R.string.app_name)
-            getHeaderView(0).wifi_count.text = String.format(resources.getString(R.string.a_total_of_n_wifi_messages), mWifiLists.size)
-        }
-        mWifiAdapter.setData(mWifiLists)
-    }
-
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
         return true
@@ -178,11 +160,9 @@ class MainActivity : BaseActivity() {
         when (item?.itemId) {
             android.R.id.home -> drawer_layout.openDrawer(GravityCompat.START)
             R.id.item_setting -> {
-                Intent().apply {
+                startActivity(Intent().apply {
                     action = "android.net.wifi.PICK_WIFI_NETWORK"
-                }.let {
-                    startActivity(it)
-                }
+                })
             }
         }
         return super.onOptionsItemSelected(item)
