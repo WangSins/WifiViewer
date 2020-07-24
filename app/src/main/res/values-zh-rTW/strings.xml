@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Wifi Viewer</string>
     <string name="refresh_complete">刷新完成</string>
-    <string name="refresh_error">沒有獲取到WIFI信息</string>
+    <string name="data_empty">沒有獲取到WIFI信息</string>
 
     <string name="root_privilege_check">Root權限檢測</string>
     <string name="unable_to_obtain_root_privileges">無法獲取Root權限。</string>

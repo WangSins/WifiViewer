@@ -1,8 +1,9 @@
-package com.example.wsins.wifiviewer.util
+package com.example.wsins.wifiviewer.model
 
 import android.os.Handler
 import android.os.Looper
 import com.example.wsins.wifiviewer.bean.WifiBean
+import com.example.wsins.wifiviewer.util.RootUtils
 import org.w3c.dom.Element
 import org.xml.sax.SAXException
 import java.io.*
@@ -11,7 +12,7 @@ import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.parsers.ParserConfigurationException
 import kotlin.concurrent.thread
 
-object WifiManager {
+object WifiModel {
 
     private val isO: Boolean
         get() {
@@ -22,12 +23,12 @@ object WifiManager {
         Handler(Looper.getMainLooper())
     }
 
-    interface ReadCallback<T> {
-        fun onSuccess(response: MutableList<T>)
+    interface ReadCallback {
+        fun onSuccess(response: MutableList<WifiBean>)
         fun onError(errorCode: Int)
     }
 
-    fun readData(callback: ReadCallback<WifiBean>) {
+    fun readData(callback: ReadCallback) {
         thread {
             var process: Process? = null
             var dataOutputStream: DataOutputStream? = null

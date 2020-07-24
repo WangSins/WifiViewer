@@ -1,6 +1,8 @@
 package com.example.wsins.wifiviewer.util
 
 import android.content.res.Resources
+import android.support.design.widget.Snackbar
+import android.view.View
 
 /**
  * Created by Sin on 2020/7/14
@@ -22,3 +24,7 @@ val Float.sp: Float                 // [xxhdpi](360 -> 1080)
 val Int.sp: Int
     get() = android.util.TypedValue.applyDimension(
             android.util.TypedValue.COMPLEX_UNIT_SP, this.toFloat(), Resources.getSystem().displayMetrics).toInt()
+
+fun View.showSnackBar(text: String, duration: Int) {
+    Snackbar.make(this, text, duration).show()
+}
