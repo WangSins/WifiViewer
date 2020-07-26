@@ -23,6 +23,7 @@ import com.example.wsins.wifiviewer.util.ActivityManager
 import com.example.wsins.wifiviewer.util.dp
 import com.example.wsins.wifiviewer.util.showSnackBar
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.empty_layout.*
 import kotlinx.android.synthetic.main.nav_header.view.*
 
 class MainActivity() : BaseActivity(), WifiContract.IWifiView,
@@ -36,7 +37,7 @@ class MainActivity() : BaseActivity(), WifiContract.IWifiView,
 
     override fun initActionBar() {
         setSupportActionBar(toolbar)
-        supportActionBar?.apply {
+        supportActionBar?.run {
             setDisplayHomeAsUpEnabled(true)
             setHomeButtonEnabled(true)
             setHomeAsUpIndicator(R.drawable.ic_menu_black_24dp)
@@ -45,7 +46,7 @@ class MainActivity() : BaseActivity(), WifiContract.IWifiView,
 
     override fun initView() {
         mWifiAdapter = WifiAdapter()
-        rv_wifi_list.run {
+        wifi_list_rv.run {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = mWifiAdapter
             addItemDecoration(object : RecyclerView.ItemDecoration() {
@@ -72,7 +73,7 @@ class MainActivity() : BaseActivity(), WifiContract.IWifiView,
     }
 
     override fun initEvent() {
-        srl_wifi_list.setOnRefreshListener(this)
+        wifi_list_srl.setOnRefreshListener(this)
         nav_view.setNavigationItemSelectedListener(this)
     }
 
@@ -104,7 +105,7 @@ class MainActivity() : BaseActivity(), WifiContract.IWifiView,
         } else {
             if (keyCode == KeyEvent.KEYCODE_BACK) {
                 if ((System.currentTimeMillis() - mExitTime) > 2000) {
-                    rv_wifi_list.showSnackBar(getString(R.string.press_exit_again), Snackbar.LENGTH_SHORT)
+                    wifi_list_rv.showSnackBar(getString(R.string.press_exit_again), Snackbar.LENGTH_SHORT)
                     mExitTime = System.currentTimeMillis()
                 } else {
                     finish()
@@ -121,19 +122,13 @@ class MainActivity() : BaseActivity(), WifiContract.IWifiView,
             getHeaderView(0).wifi_count.text = String.format(resources.getString(R.string.a_total_of_n_wifi_messages), response.size)
         }
         mWifiAdapter.setData(response)
-        srl_wifi_list.also {
-            it.isRefreshing = false
-            if (loadStyle != DATA_FIRST_LOAD) {
-                it.showSnackBar(getString(R.string.refresh_complete), Snackbar.LENGTH_SHORT)
-            }
-        }
+        wifi_list_srl.isRefreshing = false
+        empty_layout.visibility = View.GONE
     }
 
     override fun loadError(loadStyle: Int, errorCode: Int) {
-        srl_wifi_list.also {
-            it.isRefreshing = false
-        }
-        AlertDialog.Builder(this@MainActivity).run {
+        wifi_list_srl.isRefreshing = false
+        with(AlertDialog.Builder(this@MainActivity)) {
             setTitle(context.getString(R.string.root_privilege_check))
             setMessage(context.getString(R.string.unable_to_obtain_root_privileges))
             setCancelable(false)
@@ -144,13 +139,13 @@ class MainActivity() : BaseActivity(), WifiContract.IWifiView,
         }
     }
 
-    override fun onLoading(loadStyle: Int) {}
+    override fun onLoading(loadStyle: Int) {
+        wifi_list_srl.isRefreshing = true
+    }
 
     override fun onEmpty(loadStyle: Int) {
-        srl_wifi_list.also {
-            it.isRefreshing = false
-            it.showSnackBar(getString(R.string.data_empty), Snackbar.LENGTH_LONG)
-        }
+        wifi_list_srl.isRefreshing = false
+        empty_layout.visibility = View.VISIBLE
     }
 
     override fun onRefresh() {
@@ -160,12 +155,11 @@ class MainActivity() : BaseActivity(), WifiContract.IWifiView,
     override fun onNavigationItemSelected(p0: MenuItem): Boolean {
         when (p0.itemId) {
             R.id.nav_share -> {
-                with(Intent(Intent.ACTION_SEND)) {
+                startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).apply {
                     type = "text/plain"
                     putExtra(Intent.EXTRA_TEXT, getString(R.string.share_app_information))
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    startActivity(Intent.createChooser(this, getString(R.string.share_app)))
-                }
+                }, getString(R.string.share_app)))
             }
             R.id.nav_about -> {
                 with(AlertDialog.Builder(this@MainActivity)) {
