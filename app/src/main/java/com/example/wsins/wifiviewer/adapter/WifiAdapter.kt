@@ -5,6 +5,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.support.design.widget.Snackbar
+import android.support.v7.util.DiffUtil
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -19,9 +20,11 @@ class WifiAdapter : RecyclerView.Adapter<WifiAdapter.WifiViewHolder>() {
     private lateinit var mContext: Context
 
     fun setData(wifiLists: MutableList<WifiBean>) {
+        with(DiffUtil.calculateDiff(WifiDiffCallBack(mWifiLists, wifiLists))) {
+            dispatchUpdatesTo(this@WifiAdapter)
+        }
         mWifiLists.clear()
         mWifiLists.addAll(wifiLists)
-        notifyDataSetChanged()
     }
 
     override fun onCreateViewHolder(p0: ViewGroup, p1: Int): WifiViewHolder {
