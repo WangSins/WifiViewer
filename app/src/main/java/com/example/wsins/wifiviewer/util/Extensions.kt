@@ -1,7 +1,7 @@
 package com.example.wsins.wifiviewer.util
 
 import android.content.res.Resources
-import android.support.design.widget.Snackbar
+import com.google.android.material.snackbar.Snackbar
 import android.view.View
 
 /**

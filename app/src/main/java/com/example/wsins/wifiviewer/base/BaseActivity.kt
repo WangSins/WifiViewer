@@ -2,7 +2,7 @@ package com.example.wsins.wifiviewer.base
 
 import android.os.Bundle
 import android.os.Handler
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import com.example.wsins.wifiviewer.listener.OnNextListener
 import com.example.wsins.wifiviewer.util.ActivityManager
 import com.example.wsins.wifiviewer.util.RootUtils

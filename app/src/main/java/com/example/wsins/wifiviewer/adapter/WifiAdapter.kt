@@ -4,9 +4,9 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
-import android.support.design.widget.Snackbar
-import android.support.v7.util.DiffUtil
-import android.support.v7.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -62,7 +62,7 @@ class WifiAdapter : RecyclerView.Adapter<WifiAdapter.WifiViewHolder>() {
 
     private fun copyAndShare(view: View, msg: String, shareTitle: String, shareContent: String) {
         (mContext.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).run {
-            primaryClip = ClipData.newPlainText("", shareContent)
+            setPrimaryClip(ClipData.newPlainText("", shareContent))
         }
         Snackbar.make(view, msg, Snackbar.LENGTH_SHORT)
                 .setAction(mContext.getString(R.string.share)) {

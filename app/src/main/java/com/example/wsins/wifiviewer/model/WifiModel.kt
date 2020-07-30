@@ -16,7 +16,7 @@ object WifiModel {
 
     private val isO: Boolean
         get() {
-            return android.os.Build.VERSION.SDK_INT >= 26
+            return android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O
         }
 
     private val mHandler: Handler by lazy {

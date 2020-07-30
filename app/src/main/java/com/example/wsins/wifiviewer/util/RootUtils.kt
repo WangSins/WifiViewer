@@ -1,7 +1,7 @@
 package com.example.wsins.wifiviewer.util
 
 import android.content.Context
-import android.support.v7.app.AlertDialog
+import androidx.appcompat.app.AlertDialog
 import com.example.wsins.wifiviewer.R
 import com.example.wsins.wifiviewer.listener.OnNextListener
 import java.io.DataOutputStream

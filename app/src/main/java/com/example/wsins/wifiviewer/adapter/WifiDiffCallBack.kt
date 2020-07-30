@@ -1,6 +1,6 @@
 package com.example.wsins.wifiviewer.adapter
 
-import android.support.v7.util.DiffUtil
+import androidx.recyclerview.widget.DiffUtil
 import com.example.wsins.wifiviewer.bean.WifiBean
 
 /**
