@@ -13,11 +13,15 @@ import java.io.IOException
  */
 object RootUtils {
 
+    private const val binPath = "/system/bin/su"
+    private const val xBinPath = "/system/xbin/su"
+    private const val sBinPath = "/sbin/su"
+
     val isRoot: Boolean
         get() {
             var bool = false
             try {
-                bool = !(!File("/system/bin/su").exists() && !File("/system/xbin/su").exists())
+                bool = (File(binPath).exists() || File(xBinPath).exists() || File(sBinPath).exists())
             } catch (e: Exception) {
             }
             return bool
