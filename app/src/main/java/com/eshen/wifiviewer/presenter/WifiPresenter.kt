@@ -1,9 +1,9 @@
-package com.example.wsins.wifiviewer.presenter
+package com.eshen.wifiviewer.presenter
 
-import com.example.wsins.wifiviewer.contract.WifiContract
-import com.example.wsins.wifiviewer.base.BasePresenter
-import com.example.wsins.wifiviewer.bean.WifiBean
-import com.example.wsins.wifiviewer.model.WifiModel
+import com.eshen.wifiviewer.contract.WifiContract
+import com.eshen.wifiviewer.base.BasePresenter
+import com.eshen.wifiviewer.bean.WifiBean
+import com.eshen.wifiviewer.model.WifiModel
 
 /**
  * Created by Sin on 2020/7/21

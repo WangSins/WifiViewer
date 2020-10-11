@@ -1,7 +1,7 @@
-package com.example.wsins.wifiviewer.adapter
+package com.eshen.wifiviewer.adapter
 
 import androidx.recyclerview.widget.DiffUtil
-import com.example.wsins.wifiviewer.bean.WifiBean
+import com.eshen.wifiviewer.bean.WifiBean
 
 /**
  * Created by Sin on 2020/7/29

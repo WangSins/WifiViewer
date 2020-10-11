@@ -1,9 +1,9 @@
-package com.example.wsins.wifiviewer.model
+package com.eshen.wifiviewer.model
 
 import android.os.Handler
 import android.os.Looper
-import com.example.wsins.wifiviewer.bean.WifiBean
-import com.example.wsins.wifiviewer.util.RootUtils
+import com.eshen.wifiviewer.bean.WifiBean
+import com.eshen.wifiviewer.util.RootUtils
 import org.w3c.dom.Element
 import org.xml.sax.SAXException
 import java.io.*

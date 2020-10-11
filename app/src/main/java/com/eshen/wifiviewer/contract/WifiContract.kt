@@ -1,7 +1,7 @@
-package com.example.wsins.wifiviewer.contract
+package com.eshen.wifiviewer.contract
 
-import com.example.wsins.wifiviewer.base.IBaseView
-import com.example.wsins.wifiviewer.bean.WifiBean
+import com.eshen.wifiviewer.base.IBaseView
+import com.eshen.wifiviewer.bean.WifiBean
 
 /**
  * Created by Sin on 2020/7/24

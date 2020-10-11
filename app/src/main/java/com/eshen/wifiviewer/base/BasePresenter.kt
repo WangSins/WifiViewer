@@ -1,4 +1,4 @@
-package com.example.wsins.wifiviewer.base
+package com.eshen.wifiviewer.base
 
 import java.lang.ref.Reference
 import java.lang.ref.WeakReference

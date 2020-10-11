@@ -1,9 +1,9 @@
-package com.example.wsins.wifiviewer.util
+package com.eshen.wifiviewer.util
 
 import android.content.Context
 import androidx.appcompat.app.AlertDialog
-import com.example.wsins.wifiviewer.R
-import com.example.wsins.wifiviewer.listener.OnNextListener
+import com.eshen.wifiviewer.R
+import com.eshen.wifiviewer.listener.OnNextListener
 import java.io.BufferedReader
 import java.io.DataOutputStream
 import java.io.File

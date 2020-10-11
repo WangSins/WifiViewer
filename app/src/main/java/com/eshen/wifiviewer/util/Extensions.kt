@@ -1,4 +1,4 @@
-package com.example.wsins.wifiviewer.util
+package com.eshen.wifiviewer.util
 
 import android.content.res.Resources
 import com.google.android.material.snackbar.Snackbar

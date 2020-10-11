@@ -13,8 +13,6 @@ android {
         applicationId APPLICATION_ID
         versionCode VERSION_CODE
         versionName VERSION_NAME
-
-        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
     signingConfigs {
         release {
@@ -42,10 +40,6 @@ dependencies {
     implementation 'androidx.cardview:cardview:1.0.0'
 
     implementation 'com.google.android.material:material:1.0.0'
-
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
 
     implementation deps.kotlin.stdlib
 }

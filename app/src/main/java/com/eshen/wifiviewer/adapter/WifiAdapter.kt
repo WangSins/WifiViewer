@@ -1,4 +1,4 @@
-package com.example.wsins.wifiviewer.adapter
+package com.eshen.wifiviewer.adapter
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -11,8 +11,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import com.example.wsins.wifiviewer.R
-import com.example.wsins.wifiviewer.bean.WifiBean
+import com.eshen.wifiviewer.R
+import com.eshen.wifiviewer.bean.WifiBean
 
 class WifiAdapter : RecyclerView.Adapter<WifiAdapter.WifiViewHolder>() {
 

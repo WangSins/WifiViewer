@@ -1,11 +1,11 @@
-package com.example.wsins.wifiviewer.base
+package com.eshen.wifiviewer.base
 
 import android.os.Bundle
 import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
-import com.example.wsins.wifiviewer.listener.OnNextListener
-import com.example.wsins.wifiviewer.util.ActivityManager
-import com.example.wsins.wifiviewer.util.RootUtils
+import com.eshen.wifiviewer.listener.OnNextListener
+import com.eshen.wifiviewer.util.ActivityManager
+import com.eshen.wifiviewer.util.RootUtils
 
 /**
  * Created by Sin on 2020/7/14
