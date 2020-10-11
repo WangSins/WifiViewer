@@ -4,24 +4,21 @@ import android.content.Context
 import androidx.appcompat.app.AlertDialog
 import com.example.wsins.wifiviewer.R
 import com.example.wsins.wifiviewer.listener.OnNextListener
+import java.io.BufferedReader
 import java.io.DataOutputStream
 import java.io.File
-import java.io.IOException
+import java.io.InputStreamReader
 
 /**
  * Created by Sin on 2019/4/13
  */
 object RootUtils {
 
-    private const val binPath = "/system/bin/su"
-    private const val xBinPath = "/system/xbin/su"
-    private const val sBinPath = "/sbin/su"
-
     val isRoot: Boolean
         get() {
             var bool = false
             try {
-                bool = (File(binPath).exists() || File(xBinPath).exists() || File(sBinPath).exists())
+                bool = checkSuPath() || checkSuFile()
             } catch (e: Exception) {
             }
             return bool
@@ -37,6 +34,49 @@ object RootUtils {
             return bool
         }
 
+    private fun checkSuPath(): Boolean {
+        var process: Process? = null
+        var `in`: BufferedReader? = null
+        return try {
+            process = Runtime.getRuntime().exec(arrayOf("which", "su"))
+            `in` = BufferedReader(InputStreamReader(process.inputStream))
+            `in`.readLine() != null
+        } catch (t: Throwable) {
+            false
+        } finally {
+            `in`?.close()
+            process?.destroy()
+        }
+    }
+
+    private fun checkSuFile(): Boolean {
+        var bool = false
+        val paths = arrayOf(
+                "/sbin/su", "/system/bin/su", "/system/xbin/su",
+                "/data/local/su", "/data/local/bin/su", "/data/local/xbin/su",
+                "/system/sd/xbin/su", "/system/bin/failsafe/su"
+        )
+        for (path in paths) {
+            if (File(path).exists()) {
+                bool = true
+                break
+            }
+        }
+        return bool
+    }
+
+    private fun checkSuperuserApk(): Boolean {
+        var bool = false
+        val paths = arrayOf("/system/app/Superuser.apk", "/system/priv-app/Superuser.apk")
+        for (path in paths) {
+            if (File(path).exists()) {
+                bool = true
+                break
+            }
+        }
+        return bool
+    }
+
     private fun checkGrant(): Boolean {
         var process: Process? = null
         var os: DataOutputStream? = null
@@ -51,14 +91,7 @@ object RootUtils {
         } catch (e: Exception) {
             return false
         } finally {
-            if (os != null) {
-                try {
-                    os.close()
-                } catch (e: IOException) {
-                    e.printStackTrace()
-                }
-
-            }
+            os?.close()
             process?.destroy()
         }
         return rt == 0

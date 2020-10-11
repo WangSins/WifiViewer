@@ -20,11 +20,12 @@
 
 
     <string name="share_app">分享APP</string>
-    <string name="share_app_information">我正在使用@Wifi Viewer，查看并复制WIFI的SSID和密码。</string>
+    <string name="share_app_information">我正在使用[Wifi Viewer](https://github.com/WangSins/WifiViewer)，查看并复制WIFI的SSID和密码。</string>
 
     <string name="about">关于</string>
     <string name="warm_prompt">温馨提示</string>
     <string name="about_prompt_information">本APP是一款可以查看当前设备已保存WiFi密码的工具，并支持点击对密码进行复制，长按对SSID和密码进行复制。</string>
+    <string name="open_source">开源仓库</string>
     <string name="close">关闭</string>
 
     <string name="open_wifi_setting">打开WiFi设置</string>

@@ -3,6 +3,7 @@ package com.example.wsins.wifiviewer
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Rect
+import android.net.Uri
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import androidx.core.view.GravityCompat
@@ -165,6 +166,12 @@ class MainActivity() : BaseActivity(), WifiContract.IWifiView,
                 with(AlertDialog.Builder(this@MainActivity)) {
                     setTitle(context.getString(R.string.warm_prompt))
                     setMessage(context.getString(R.string.about_prompt_information))
+                    setNegativeButton(context.getString(R.string.open_source)) { _: DialogInterface?, _: Int ->
+                        startActivity(Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse("https://github.com/WangSins/WifiViewer")
+                        ))
+                    }
                     setPositiveButton(context.getString(R.string.close)) { dialogInterface: DialogInterface, _: Int ->
                         dialogInterface.dismiss()
                     }
