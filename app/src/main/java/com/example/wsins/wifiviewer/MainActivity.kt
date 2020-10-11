@@ -87,8 +87,8 @@ class MainActivity() : BaseActivity(), WifiContract.IWifiView,
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item?.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
             android.R.id.home -> drawer_layout.openDrawer(GravityCompat.START)
             R.id.item_setting -> {
                 startActivity(Intent().apply {
