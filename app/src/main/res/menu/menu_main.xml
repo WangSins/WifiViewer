@@ -6,6 +6,17 @@
         android:id="@+id/item_setting"
         android:icon="@drawable/ic_settings_black_24dp"
         android:title="@string/open_wifi_setting"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/item_share"
+        android:icon="@drawable/ic_share_black_24dp"
+        android:title="@string/share"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/item_about"
+        android:icon="@drawable/ic_info_outline_black_24dp"
+        android:title="@string/about"
+        app:showAsAction="ifRoom" />
 
 </menu>
